@@ -15,6 +15,7 @@ const selection = useSelection();
 const previews = usePreviews();
 const submit = useSubmit();
 const { cancel } = useCancel();
+const whosOff = useWhosOff();
 
 const todayYmd = computed(() =>
   today(session.state.me?.timeZone ?? 'Europe/Paris'),
@@ -80,9 +81,17 @@ let drag: {
 
 const onPress = (press: CellPress) => {
   if (press.event.button !== 0) return;
+  if (press.event.altKey) {
+    press.event.preventDefault();
+    void whosOff.focus(press.date);
+    return;
+  }
   if (selection.brush.value === null) {
     if (requestIdOf(press.date) !== null) card.pin(press.date);
-    else askForBrush();
+    else {
+      void whosOff.focus(press.date);
+      askForBrush();
+    }
     return;
   }
   card.hide();
@@ -144,13 +153,18 @@ useShortcuts({
 onMounted(() => {
   window.addEventListener('mouseup', onRelease);
   natures.load();
-  if (store.state.status.requests === 'idle') store.load(year.value);
+  const own =
+    store.state.status.requests === 'idle'
+      ? store.load(year.value)
+      : Promise.resolve();
+  void own.then(() => whosOff.load());
 });
 onBeforeUnmount(() => window.removeEventListener('mouseup', onRelease));
 </script>
 
 <template>
   <main class="planner">
+    <WhosOff />
     <section class="grid-area">
       <div v-if="failed.length > 0" class="failed">
         <span class="caption">Some data did not load.</span>
@@ -217,7 +231,7 @@ onBeforeUnmount(() => window.removeEventListener('mouseup', onRelease));
 <style scoped>
 .planner {
   display: grid;
-  grid-template-columns: 1fr 320px;
+  grid-template-columns: 220px 1fr 320px;
   gap: var(--space-6);
   align-items: start;
 }
