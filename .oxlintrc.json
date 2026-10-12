@@ -4,5 +4,13 @@
     "correctness": "error",
     "suspicious": "warn"
   },
-  "ignorePatterns": ["node_modules", ".nuxt", ".output", "dist", "**/docs/**"]
+  "ignorePatterns": ["node_modules", ".nuxt", ".output", "dist", "**/docs/**"],
+  "rules": {
+    "no-underscore-dangle": [
+      "warn",
+      {
+        "allow": ["_workflows", "_links", "_isReadOnly", "_audit"]
+      }
+    ]
+  }
 }
