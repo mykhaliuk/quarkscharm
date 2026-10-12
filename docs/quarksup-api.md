@@ -304,6 +304,11 @@ calendar year.
    The refresh token lives about five minutes, so rotation means a
    continuous refresh loop, and the Connect screen would have to accept the
    whole token response, not only the bearer.
-2. People API spec: fetch any `people/v3` response and read its `link` header
+2. OIDC login: most likely not possible (owner, 2026-10-12). ADFS gives
+   tokens only to a registered client with registered redirect URIs, and
+   the quarksCharm domain is not one of them.
+3. Multi-account: never (owner, 2026-10-12). The app keeps one tenant and
+   one token.
+4. People API spec: fetch any `people/v3` response and read its `link` header
    for the openapi URL, if avatars/directory beyond the planner are needed.
 3. (closed) Cancel and update captured live, see §6b/§6c.
