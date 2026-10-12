@@ -11,6 +11,10 @@ The charm flavour of quarksUp: a personal helper for absences
 Stateless: no database, no accounts. You paste your own quarksUp bearer
 token; it stays in your browser.
 
+## Production
+
+https://quarkscharm.vercel.app (deployed from `main`).
+
 ## Stack
 
 Nuxt 4 (Vue 3), Nitro server routes as the CORS proxy, Vercel, bun.
