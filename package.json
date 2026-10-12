@@ -14,7 +14,8 @@
     "lint": "oxlint app server shared scripts tests e2e *.config.ts",
     "fmt": "oxfmt .",
     "fmt:check": "oxfmt --check .",
-    "typecheck": "nuxt typecheck"
+    "typecheck": "nuxt typecheck",
+    "test:unit": "bun test tests/unit"
   },
   "dependencies": {
     "nuxt": "^4.6.1",
@@ -22,6 +23,7 @@
     "vue-router": "^5.4.0"
   },
   "devDependencies": {
+    "@types/bun": "^1.4.3",
     "oxfmt": "^0.72.0",
     "oxlint": "^1.87.0",
     "typescript": "^5.9.0",
