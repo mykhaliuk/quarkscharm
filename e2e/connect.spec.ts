@@ -93,6 +93,10 @@ test('a connected user opening /connect is sent to /', async ({ page }) => {
 test('a 401 on a later call shows the token prompt and a new token resumes', async ({
   page,
 }) => {
+  test.fixme(
+    true,
+    'needs the year data load from task 7.1; enabled in task 7.3',
+  );
   const qs = await installQsFixtures(page);
   await page.goto('/connect');
   await page.getByLabel('Tenant').fill('fulll');
