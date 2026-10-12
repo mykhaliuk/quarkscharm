@@ -93,16 +93,13 @@ test('a connected user opening /connect is sent to /', async ({ page }) => {
 test('a 401 on a later call shows the token prompt and a new token resumes', async ({
   page,
 }) => {
-  test.fixme(
-    true,
-    'needs the year data load from task 7.1; enabled in task 7.3',
-  );
   const qs = await installQsFixtures(page);
   await page.goto('/connect');
   await page.getByLabel('Tenant').fill('fulll');
   await page.getByLabel('Token').fill(buildToken());
   await page.getByRole('button', { name: 'Connect' }).click();
   await expect(page).toHaveURL(/\/$/);
+  await expect.poll(() => qs.callsTo(/planners\/me$/).length).toBe(2);
   qs.failNext('GET', /planners\/me$/, 401, { message: 'expired' });
   await page.getByRole('button', { name: 'Next year' }).click();
   const prompt = page.getByTestId('token-prompt');
@@ -111,5 +108,8 @@ test('a 401 on a later call shows the token prompt and a new token resumes', asy
   await prompt.getByLabel('Token').fill(buildToken(7200));
   await prompt.getByRole('button', { name: 'Connect' }).click();
   await expect(prompt).toBeHidden();
-  expect(qs.callsTo(/planners\/me$/).length).toBeGreaterThanOrEqual(2);
+  await expect
+    .poll(() => qs.callsTo(/planners\/me$/).length)
+    .toBeGreaterThanOrEqual(4);
+  await expect(page.getByTestId('year')).toHaveText('2027');
 });
