@@ -1,0 +1,164 @@
+import { expect, test, type Page } from '@playwright/test';
+import { installQsFixtures, type QsFixtures } from './fixtures/qs';
+import { buildToken } from './fixtures/token';
+import previewSplit from '../tests/fixtures/qs/preview-split.json' with { type: 'json' };
+
+const connect = async (page: Page): Promise<QsFixtures> => {
+  const qs = await installQsFixtures(page);
+  await page.goto('/connect');
+  await page.getByLabel('Tenant').fill('fulll');
+  await page.getByLabel('Token').fill(buildToken());
+  await page.getByRole('button', { name: 'Connect' }).click();
+  await expect(page.locator('[data-date="2026-10-22"]')).toHaveClass(/full/);
+  return qs;
+};
+
+const cell = (page: Page, date: string) =>
+  page.locator(`[data-date="${date}"]`);
+
+test('a click without a brush paints nothing and highlights the chips', async ({
+  page,
+}) => {
+  await connect(page);
+  await cell(page, '2026-11-02').click();
+  await expect(cell(page, '2026-11-02')).not.toHaveClass(/selected/);
+  await expect(page.getByTestId('brush-bar')).toHaveClass(/highlighted/);
+});
+
+test('drag Monday to Friday paints five days and the panel lists one run', async ({
+  page,
+}) => {
+  const qs = await connect(page);
+  await page.keyboard.press('f');
+  await expect(page.locator('[data-nature-id="17"]')).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  );
+  const from = await cell(page, '2026-11-02').boundingBox();
+  const to = await cell(page, '2026-11-06').boundingBox();
+  await page.mouse.move(from!.x + 10, from!.y + 10);
+  await page.mouse.down();
+  await page.mouse.move(to!.x + 10, to!.y + 10, { steps: 8 });
+  await page.mouse.up();
+  for (const day of ['02', '03', '04', '05', '06']) {
+    await expect(cell(page, `2026-11-${day}`)).toHaveClass(/selected/);
+    await expect(
+      cell(page, `2026-11-${day}`).locator('[data-half="pm"]'),
+    ).toHaveAttribute('style', /--nature-foff/);
+  }
+  const panel = page.getByTestId('review-panel');
+  const rows = panel.getByTestId('run-row');
+  await expect(rows).toHaveCount(1);
+  await expect(rows.first()).toContainText('Fulll Off');
+  await expect(rows.first()).toContainText('2–6 Nov 2026');
+  await expect(rows.first().getByTestId('segment')).toHaveCount(1);
+  await expect(rows.first()).toContainText('3 days');
+  await expect(rows.first().getByTestId('balance-after')).toHaveText('6 → 3');
+  await expect(rows.first().getByTestId('overlap')).toHaveCount(2);
+  await expect(rows.first()).toContainText('Bea Sample');
+  await expect(rows.first()).toContainText('Cyr Demo');
+  await expect(panel.getByRole('button', { name: 'Submit 1' })).toBeEnabled();
+  await expect
+    .poll(() =>
+      qs
+        .callsTo(/requests\/preview$/)
+        .map((c) => `${c.query.beginDate}..${c.query.endDate}`),
+    )
+    .toEqual(['2026-11-02T00:00:00Z..2026-11-06T23:00:00Z']);
+});
+
+test('a shift-click on the afternoon paints one half and the run shows 0.5 day', async ({
+  page,
+}) => {
+  const qs = await connect(page);
+  qs.override('GET', /requests\/preview$/, () => ({
+    status: 200,
+    body: {
+      natures: [
+        { id: 14, reference: 'CP', entitlement: { id: 388, balance: 4.82 } },
+      ],
+      segments: [
+        {
+          beginDate: '2026-11-03T13:00:00Z',
+          endDate: '2026-11-03T23:00:00Z',
+          duration: 0.5,
+          natureId: 14,
+        },
+      ],
+      overlappingRequests: [],
+      conflictingEvents: [],
+      warnings: [],
+    },
+  }));
+  await page.keyboard.press('c');
+  await cell(page, '2026-11-03')
+    .locator('[data-half="pm"]')
+    .click({ modifiers: ['Shift'] });
+  const target = cell(page, '2026-11-03');
+  await expect(target).toHaveClass(/selected/);
+  await expect(target).not.toHaveClass(/full/);
+  await expect(target.locator('[data-half="pm"]')).toHaveAttribute(
+    'style',
+    /--nature-cp/,
+  );
+  const row = page.getByTestId('run-row').first();
+  await expect(row).toContainText('0.5 day');
+  await expect(row.getByTestId('balance-after')).toHaveText('4.82 → 4.32');
+  await expect
+    .poll(() => qs.callsTo(/requests\/preview$/).map((c) => c.query.beginDate))
+    .toContain('2026-11-03T13:00:00Z');
+});
+
+test('a split preview lists every segment and keeps one run', async ({
+  page,
+}) => {
+  const qs = await connect(page);
+  qs.override('GET', /requests\/preview$/, () => ({
+    status: 200,
+    body: previewSplit,
+  }));
+  await page.keyboard.press('c');
+  const from = await cell(page, '2026-11-10').boundingBox();
+  const to = await cell(page, '2026-11-12').boundingBox();
+  await page.mouse.move(from!.x + 10, from!.y + 10);
+  await page.mouse.down();
+  await page.mouse.move(to!.x + 10, to!.y + 10, { steps: 5 });
+  await page.mouse.up();
+  const rows = page.getByTestId('run-row');
+  await expect(rows).toHaveCount(1);
+  await expect(rows.first().getByTestId('segment')).toHaveCount(2);
+  await expect(rows.first()).toContainText('Le solde sera insuffisant');
+  await expect(page.getByRole('button', { name: 'Submit 1' })).toBeEnabled();
+});
+
+test('a rejected preview shows its message and disables submit; Escape clears', async ({
+  page,
+}) => {
+  const qs = await connect(page);
+  qs.override('GET', /requests\/preview$/, () => ({
+    status: 400,
+    body: { errors: [{ message: 'Chevauchement avec une absence existante' }] },
+  }));
+  await page.keyboard.press('t');
+  await cell(page, '2026-11-02').click();
+  const row = page.getByTestId('run-row').first();
+  await expect(row).toContainText('Chevauchement avec une absence existante');
+  await expect(page.getByRole('button', { name: 'Submit 1' })).toBeDisabled();
+  await page.keyboard.press('Escape');
+  await expect(page.getByTestId('run-row')).toHaveCount(0);
+  await expect(cell(page, '2026-11-02')).not.toHaveClass(/selected/);
+});
+
+test('an unavailable preview offers a retry', async ({ page }) => {
+  const qs = await connect(page);
+  qs.failNext('GET', /requests\/preview$/, 503, { message: 'down' });
+  await page.keyboard.press('t');
+  await cell(page, '2026-11-02').click();
+  const row = page.getByTestId('run-row').first();
+  const retry = row.getByRole('button', { name: 'Retry' });
+  await expect(retry).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Submit 1' })).toBeDisabled();
+  await retry.click();
+  await expect(retry).toBeHidden();
+  await expect(page.getByRole('button', { name: 'Submit 1' })).toBeEnabled();
+});
