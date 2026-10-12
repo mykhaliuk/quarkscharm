@@ -1,0 +1,23 @@
+{
+  "$schema": "./node_modules/oxfmt/configuration_schema.json",
+  "semi": true,
+  "singleQuote": true,
+  "trailingComma": "all",
+  "printWidth": 80,
+  "tabWidth": 2,
+  "vueIndentScriptAndStyle": false,
+  "sortPackageJson": false,
+  "ignorePatterns": [
+    "node_modules",
+    ".nuxt",
+    ".output",
+    "dist",
+    ".claude/rules",
+    ".claude/commands/opsx",
+    ".claude/skills/openspec-*",
+    "openspec",
+    "bun.lock",
+    "docs/design",
+    "docs/openapi-times.json"
+  ]
+}
