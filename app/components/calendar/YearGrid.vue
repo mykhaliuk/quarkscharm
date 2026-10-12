@@ -12,6 +12,7 @@ const props = defineProps<{
   holidays: Map<string, string>;
   today: string;
   pendingIds: Set<number>;
+  focusedDate: string | null;
   colorToken: (natureId: number | null) => string;
 }>();
 
@@ -37,6 +38,7 @@ const grids = computed(() => yearMonths(props.year));
       :holidays="holidays"
       :today="today"
       :pending-ids="pendingIds"
+      :focused-date="focusedDate"
       :color-token="colorToken"
       @enter="emit('enter', $event)"
       @leave="emit('leave', $event)"

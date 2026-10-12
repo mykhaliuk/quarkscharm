@@ -30,7 +30,7 @@ export const usePreviews = (): PreviewStore => {
       );
     },
   });
-  watch(selection.editing, () => created.clear());
+  watch(selection.editing, () => created.reset(selection.runs.value));
   watch(selection.runs, (runs) => created.sync(runs), { immediate: true });
   watch(
     () => [...created.state.values()],

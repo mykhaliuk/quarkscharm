@@ -32,10 +32,18 @@ const failed = computed(() =>
   PARTS.filter((part) => store.state.status[part] === 'failed'),
 );
 const brushHighlighted = ref(false);
+const editingRequest = computed(() =>
+  selection.editing.value === null
+    ? null
+    : (store.state.requests.find((r) => r.id === selection.editing.value) ??
+      null),
+);
 const canSubmit = computed(
   () =>
     selection.runs.value.length > 0 &&
-    previews.allReady.value &&
+    selection.runs.value.every(
+      (run) => previews.state.get(run.key)?.status === 'ready',
+    ) &&
     !submit.submitting.value,
 );
 
@@ -86,12 +94,13 @@ const onPress = (press: CellPress) => {
     void whosOff.focus(press.date);
     return;
   }
+  if (requestIdOf(press.date) !== null && selection.editing.value === null) {
+    card.pin(press.date);
+    return;
+  }
   if (selection.brush.value === null) {
-    if (requestIdOf(press.date) !== null) card.pin(press.date);
-    else {
-      void whosOff.focus(press.date);
-      askForBrush();
-    }
+    void whosOff.focus(press.date);
+    askForBrush();
     return;
   }
   card.hide();
@@ -108,7 +117,6 @@ const onEnter = (date: string) => {
     drag.to = date;
     return;
   }
-  card.enter(date);
   const label = store.state.holidays.get(date);
   if (label === undefined) {
     tooltip.value = null;
@@ -122,7 +130,6 @@ const onEnter = (date: string) => {
     : null;
 };
 const onLeave = () => {
-  card.leave();
   tooltip.value = null;
 };
 const onRelease = () => {
@@ -155,14 +162,21 @@ const confirmCancel = async (request: AbsenceRequest) => {
 
 const selectBrush = (index: number) => {
   const id = natures.brushes.value[index];
-  if (id !== undefined) selection.setBrush(id);
+  if (id !== undefined)
+    selection.setBrush(selection.brush.value === id ? null : id);
+};
+const escape = () => {
+  const idle =
+    selection.runs.value.length === 0 && selection.editing.value === null;
+  if (idle) selection.setBrush(null);
+  else clearAll();
 };
 
 useShortcuts({
   t: () => selectBrush(0),
   f: () => selectBrush(1),
   c: () => selectBrush(2),
-  Escape: clearAll,
+  Escape: escape,
   Enter: () => void submitAll(),
 });
 
@@ -179,7 +193,7 @@ onBeforeUnmount(() => window.removeEventListener('mouseup', onRelease));
 </script>
 
 <template>
-  <main class="planner">
+  <main class="planner" :class="{ 'with-banner': editingRequest }">
     <WhosOff />
     <section class="grid-area">
       <div v-if="failed.length > 0" class="failed">
@@ -192,6 +206,20 @@ onBeforeUnmount(() => window.removeEventListener('mouseup', onRelease));
           @click="store.retry(part)"
         >
           Retry {{ part }}
+        </button>
+      </div>
+      <div v-if="editingRequest" class="editing" data-testid="editing-banner">
+        <span class="label">
+          Changing a
+          {{ natures.label(editingRequest.segments[0]?.natureId ?? null) }}
+          request
+        </span>
+        <span class="caption">
+          Click days to add or remove them, pick another brush to change the
+          nature, then press "Save change". Escape cancels.
+        </span>
+        <button type="button" class="retry label" @click="clearAll">
+          Cancel change
         </button>
       </div>
       <BrushBar
@@ -212,6 +240,7 @@ onBeforeUnmount(() => window.removeEventListener('mouseup', onRelease));
         :holidays="store.state.holidays"
         :today="todayYmd"
         :pending-ids="pendingIds"
+        :focused-date="card.date.value"
         :color-token="natures.colorToken"
         @enter="onEnter"
         @leave="onLeave"
@@ -248,8 +277,6 @@ onBeforeUnmount(() => window.removeEventListener('mouseup', onRelease));
       :color-token="natures.colorToken"
       @change="startChange"
       @cancel="confirmCancel"
-      @hold="card.hold"
-      @release="card.leave"
     />
   </main>
 </template>
@@ -262,10 +289,37 @@ onBeforeUnmount(() => window.removeEventListener('mouseup', onRelease));
   align-items: start;
 }
 
+.with-banner {
+  padding-bottom: 96px;
+}
+
 .grid-area {
   display: grid;
   gap: var(--space-4);
   align-content: start;
+}
+
+.editing {
+  position: fixed;
+  z-index: 5;
+  left: 50%;
+  bottom: var(--space-4);
+  transform: translateX(-50%);
+  width: min(720px, calc(100vw - 32px));
+  box-shadow: 0 4px 16px rgb(0 0 0 / 0.12);
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  background: var(--accent-soft);
+  border-radius: var(--radius-card);
+}
+
+.editing .caption {
+  color: var(--ink-2);
+  flex: 1;
+  min-width: 0;
 }
 
 .failed {

@@ -30,6 +30,7 @@ const props = defineProps<{
   holidays: Map<string, string>;
   today: string;
   pendingIds: Set<number>;
+  focusedDate: string | null;
   colorToken: (natureId: number | null) => string;
 }>();
 
@@ -73,6 +74,7 @@ const isSelected = (date: string): boolean => props.selection.has(date);
             :today="date === today"
             :pending="isPending(date)"
             :selected="isSelected(date)"
+            :focused="date === focusedDate"
             :color-token="colorToken"
             @enter="emit('enter', $event)"
             @leave="emit('leave', $event)"

@@ -70,10 +70,16 @@ export const createEntitlements = ({
     }
     const result: Entitlement[] = [];
     for (const list of byNature.values()) {
-      list.sort((a, b) =>
-        (a.periodBegin ?? '').localeCompare(b.periodBegin ?? ''),
-      );
-      result.push(...list.slice(0, 2));
+      const dated = list.every((e) => e.periodBegin !== null);
+      if (dated) {
+        list.sort((a, b) =>
+          (a.periodBegin as string).localeCompare(b.periodBegin as string),
+        );
+        result.push(...list.slice(0, 2));
+        continue;
+      }
+      list.sort((a, b) => b.periodId - a.periodId);
+      result.push(...list.filter((e, index) => index === 0 || e.balance > 0));
     }
     return result;
   });

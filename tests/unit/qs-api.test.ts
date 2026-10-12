@@ -53,7 +53,7 @@ const last = () => {
 };
 
 const PREVIEW_QUERY = {
-  thumbnails: 'small',
+  thumbnails: 'medium',
   overlapScope: 'Service',
   details: 'default,Conflicts,Overlaps',
   isSocialSecurity: 'false',
@@ -76,11 +76,13 @@ describe('qs api', () => {
 
   test('getNatures and getStatuses read the organization metadata', async () => {
     serve(natures);
-    expect(await api.getNatures()).toEqual(natures);
+    expect(await api.getNatures()).toEqual(natures.items);
     expect(last().path).toBe('/api/qs/org/organization/metadata/absenceNature');
     expect(last().query).toEqual({ includeInactive: 'true', locale: 'fr-FR' });
     serve(statuses);
-    expect(await api.getStatuses()).toEqual(statuses);
+    expect(await api.getStatuses()).toEqual(statuses.items);
+    serve(statuses.items);
+    expect(await api.getStatuses()).toEqual(statuses.items);
     expect(last().path).toBe('/api/qs/org/organization/metadata/absenceStatus');
   });
 
@@ -143,7 +145,7 @@ describe('qs api', () => {
       beginDate: '2026-10-01T00:00:00Z',
       endDate: '2026-10-31T23:00:00Z',
       top: '500',
-      thumbnails: 'small',
+      thumbnails: 'medium',
       locale: 'fr-FR',
     });
   });

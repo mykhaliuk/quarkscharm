@@ -34,10 +34,13 @@ export type RawNature = {
   entitlementAccruable?: boolean;
   timeSavingAccount?: boolean;
   isActive?: boolean;
-  color?: number | null;
+  color?: number | string | null;
+  plannerCode?: string;
 };
 
 export type RawStatus = { id: number; reference?: string; label: string };
+
+export type RawItemSet<T> = { reference?: string; label?: string; items: T[] };
 
 export type RawEntitlement = {
   id: number;

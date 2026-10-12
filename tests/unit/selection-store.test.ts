@@ -154,3 +154,61 @@ describe('edit mode', () => {
     expect(s.editing.value).toBeNull();
   });
 });
+
+describe('days of existing requests', () => {
+  const TAKEN: Record<string, { am: number | null; pm: number | null }> = {
+    '2026-10-13': { am: 155, pm: 155 },
+    '2026-10-14': { am: null, pm: 160 },
+  };
+  const buildTaken = () =>
+    createSelection({
+      isSelectable: (ymd) => !WEEKEND.has(ymd),
+      occupant: (ymd, half) => TAKEN[ymd]?.[half] ?? null,
+    });
+
+  test('a click on a taken day paints nothing', () => {
+    const selection = buildTaken();
+    selection.setBrush(75);
+    expect(selection.paintDay('2026-10-13')).toBe('not-selectable');
+    expect(selection.paint.size).toBe(0);
+  });
+
+  test('a click on a half-taken day paints only the free half', () => {
+    const selection = buildTaken();
+    selection.setBrush(75);
+    selection.paintDay('2026-10-14');
+    expect(selection.paint.get('2026-10-14')).toEqual({
+      am: { natureId: 75, requestId: null },
+      pm: null,
+    });
+  });
+
+  test('a drag skips the taken days', () => {
+    const selection = buildTaken();
+    selection.setBrush(75);
+    selection.paintRange('2026-10-12', '2026-10-15');
+    expect(Array.from(selection.paint.keys())).toEqual([
+      '2026-10-12',
+      '2026-10-14',
+      '2026-10-15',
+    ]);
+    expect(selection.paint.get('2026-10-14')?.pm).toBeNull();
+  });
+
+  test('in change mode the days of the edited request stay paintable', () => {
+    const selection = buildTaken();
+    selection.loadRequest({
+      id: 155,
+      natureId: 75,
+      beginDate: '2026-10-13',
+      beginHour: 0,
+      endDate: '2026-10-13',
+      endHour: 23,
+    });
+    selection.paintDay('2026-10-13');
+    expect(selection.paint.has('2026-10-13')).toBe(false);
+    selection.paintRange('2026-10-13', '2026-10-14');
+    expect(selection.paint.get('2026-10-13')?.am?.natureId).toBe(75);
+    expect(selection.paint.get('2026-10-14')?.pm).toBeNull();
+  });
+});

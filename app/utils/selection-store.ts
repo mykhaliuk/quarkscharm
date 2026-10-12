@@ -22,7 +22,12 @@ export type EditTarget = {
 
 export type PaintResult = 'painted' | 'no-brush' | 'not-selectable';
 
-type Deps = { isSelectable: (ymd: string) => boolean };
+type Deps = {
+  isSelectable: (ymd: string) => boolean;
+  occupant?: (ymd: string, half: Half) => number | null;
+};
+
+const HALVES: Half[] = ['am', 'pm'];
 
 const same = (current: Paint | null, natureId: number): boolean =>
   current !== null && current.natureId === natureId;
@@ -30,7 +35,10 @@ const same = (current: Paint | null, natureId: number): boolean =>
 export const runKey = (run: Run): string =>
   `${run.natureId}:${run.beginDate}:${run.beginHour}`;
 
-export const createSelection = ({ isSelectable }: Deps) => {
+export const createSelection = ({
+  isSelectable,
+  occupant = () => null,
+}: Deps) => {
   const brush = ref<number | null>(null);
   const paint = reactive(new Map<string, Slot>());
   const editing = ref<number | null>(null);
@@ -42,6 +50,21 @@ export const createSelection = ({ isSelectable }: Deps) => {
   const slotOf = (ymd: string): Slot =>
     paint.get(ymd) ?? { am: null, pm: null };
 
+  const freeHalves = (ymd: string): Half[] => {
+    if (!isSelectable(ymd)) return [];
+    return HALVES.filter((half) => {
+      const id = occupant(ymd, half);
+      return id === null || id === editing.value;
+    });
+  };
+
+  const fill = (ymd: string, halves: Half[], natureId: number | null) => {
+    const slot = { ...slotOf(ymd) };
+    for (const half of halves)
+      slot[half] = natureId === null ? null : { natureId, requestId: null };
+    store(ymd, slot);
+  };
+
   const store = (ymd: string, slot: Slot) => {
     if (slot.am === null && slot.pm === null) paint.delete(ymd);
     else paint.set(ymd, slot);
@@ -49,29 +72,20 @@ export const createSelection = ({ isSelectable }: Deps) => {
 
   const paintHalf = (ymd: string, half: Half): PaintResult => {
     if (brush.value === null) return 'no-brush';
-    if (!isSelectable(ymd)) return 'not-selectable';
-    const slot = { ...slotOf(ymd) };
-    slot[half] = same(slot[half], brush.value)
-      ? null
-      : { natureId: brush.value, requestId: null };
-    store(ymd, slot);
+    if (!freeHalves(ymd).includes(half)) return 'not-selectable';
+    const painted = same(slotOf(ymd)[half], brush.value);
+    fill(ymd, [half], painted ? null : brush.value);
     return 'painted';
   };
 
   const paintDay = (ymd: string): PaintResult => {
     if (brush.value === null) return 'no-brush';
-    if (!isSelectable(ymd)) return 'not-selectable';
+    const halves = freeHalves(ymd);
+    if (halves.length === 0) return 'not-selectable';
     const slot = slotOf(ymd);
-    const full = same(slot.am, brush.value) && same(slot.pm, brush.value);
-    store(
-      ymd,
-      full
-        ? { am: null, pm: null }
-        : {
-            am: { natureId: brush.value, requestId: null },
-            pm: { natureId: brush.value, requestId: null },
-          },
-    );
+    const natureId = brush.value;
+    const full = halves.every((half) => same(slot[half], natureId));
+    fill(ymd, halves, full ? null : natureId);
     return 'painted';
   };
 
@@ -81,11 +95,8 @@ export const createSelection = ({ isSelectable }: Deps) => {
     const count = Math.abs(daysBetween(from, to)) + 1;
     for (let i = 0; i < count; i++) {
       const ymd = addDays(first, i);
-      if (!isSelectable(ymd)) continue;
-      store(ymd, {
-        am: { natureId: brush.value, requestId: null },
-        pm: { natureId: brush.value, requestId: null },
-      });
+      const halves = freeHalves(ymd);
+      if (halves.length > 0) fill(ymd, halves, brush.value);
     }
     return 'painted';
   };
@@ -102,6 +113,7 @@ export const createSelection = ({ isSelectable }: Deps) => {
     const count = daysBetween(target.beginDate, target.endDate) + 1;
     for (let i = 0; i < count; i++) {
       const ymd = addDays(target.beginDate, i);
+      if (!isSelectable(ymd)) continue;
       const am = i > 0 || target.beginHour < 13;
       const pm = i < count - 1 || target.endHour > 12;
       paint.set(ymd, {

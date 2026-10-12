@@ -36,7 +36,7 @@ test('shorten a two-day request to one day', async ({ page }) => {
       warnings: [],
     },
   }));
-  await cell(page, '2026-10-22').hover();
+  await cell(page, '2026-10-22').click();
   const card = page.getByTestId('request-card');
   await card.getByRole('button', { name: 'Change' }).click();
   await expect(card).toBeHidden();
@@ -82,7 +82,7 @@ test('shorten a two-day request to one day', async ({ page }) => {
 
 test('Escape leaves edit mode and restores the grid', async ({ page }) => {
   await connect(page);
-  await cell(page, '2026-10-22').hover();
+  await cell(page, '2026-10-22').click();
   await page
     .getByTestId('request-card')
     .getByRole('button', { name: 'Change' })

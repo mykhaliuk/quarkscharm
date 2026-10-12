@@ -43,6 +43,10 @@ export const createNatureStore = ({ getNatures }: NatureDeps) => {
   const brushes = computed(() => {
     const ids = [...defaults.value];
     for (const id of seen.value) if (!ids.includes(id)) ids.push(id);
+    const rest = [...byId.value.values()]
+      .filter((nature) => nature.isActive !== false && !ids.includes(nature.id))
+      .toSorted((a, b) => a.label.localeCompare(b.label));
+    for (const nature of rest) ids.push(nature.id);
     return ids;
   });
 

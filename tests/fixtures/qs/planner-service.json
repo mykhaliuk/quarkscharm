@@ -7,8 +7,15 @@
         "id": 9001,
         "firstName": "Alex",
         "lastName": "Example",
-        "job": { "id": 243, "label": "Lead developer" },
-        "position": { "entity": { "label": "TECH" } },
+        "job": {
+          "id": 243,
+          "label": "Lead developer"
+        },
+        "position": {
+          "entity": {
+            "label": "TECH"
+          }
+        },
         "nonWorkingDates": [],
         "absences": [
           {
@@ -25,14 +32,26 @@
             ]
           }
         ],
-        "picture": { "url": "https://cdn.example.test/p/9001-s.png" }
+        "picture": {
+          "url": "https://cdn.example.test/p/9001.png",
+          "thumbnails": {
+            "small": "https://cdn.example.test/p/9001-s.png"
+          }
+        }
       },
       {
         "id": 9002,
         "firstName": "Bea",
         "lastName": "Sample",
-        "job": { "id": 250, "label": "Backend developer" },
-        "position": { "entity": { "label": "TECH" } },
+        "job": {
+          "id": 250,
+          "label": "Backend developer"
+        },
+        "position": {
+          "entity": {
+            "label": "TECH"
+          }
+        },
         "nonWorkingDates": [],
         "absences": [
           {
@@ -49,14 +68,26 @@
             ]
           }
         ],
-        "picture": { "url": "https://cdn.example.test/p/9002-s.png" }
+        "picture": {
+          "url": "https://cdn.example.test/p/9002.png",
+          "thumbnails": {
+            "small": "https://cdn.example.test/p/9002-s.png"
+          }
+        }
       },
       {
         "id": 9003,
         "firstName": "Cyr",
         "lastName": "Demo",
-        "job": { "id": 251, "label": "QA" },
-        "position": { "entity": { "label": "TECH" } },
+        "job": {
+          "id": 251,
+          "label": "QA"
+        },
+        "position": {
+          "entity": {
+            "label": "TECH"
+          }
+        },
         "nonWorkingDates": [],
         "absences": [
           {

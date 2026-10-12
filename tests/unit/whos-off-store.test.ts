@@ -34,7 +34,7 @@ describe('whos-off store', () => {
         name: 'Bea Sample',
         entity: 'TECH',
         job: 'Backend developer',
-        avatarUrl: 'https://cdn.example.test/p/9002-s.png',
+        avatarUrl: 'https://cdn.example.test/p/9002.png',
         am: true,
         pm: true,
       },

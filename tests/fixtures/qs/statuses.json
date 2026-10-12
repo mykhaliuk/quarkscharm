@@ -1,16 +1,35 @@
-[
-  { "id": 1, "reference": "Absence_New", "label": "En attente" },
-  { "id": 2, "reference": "Absence_Validated", "label": "Validée" },
-  { "id": 3, "reference": "Absence_Refused", "label": "Refusée" },
-  { "id": 4, "reference": "Absence_Cancelled", "label": "Annulée" },
-  {
-    "id": 5,
-    "reference": "Absence_CancelOngoingManager",
-    "label": "Annulation en cours (manager)"
-  },
-  {
-    "id": 6,
-    "reference": "Absence_CancelOngoingRh",
-    "label": "Annulation en cours (RH)"
-  }
-]
+{
+  "reference": "AbsenceStatus",
+  "items": [
+    {
+      "id": 1,
+      "reference": "Absence_New",
+      "label": "En attente"
+    },
+    {
+      "id": 2,
+      "reference": "Absence_Validated",
+      "label": "Validée"
+    },
+    {
+      "id": 3,
+      "reference": "Absence_Refused",
+      "label": "Refusée"
+    },
+    {
+      "id": 4,
+      "reference": "Absence_Cancelled",
+      "label": "Annulée"
+    },
+    {
+      "id": 5,
+      "reference": "Absence_CancelOngoingManager",
+      "label": "Annulation en cours (manager)"
+    },
+    {
+      "id": 6,
+      "reference": "Absence_CancelOngoingRh",
+      "label": "Annulation en cours (RH)"
+    }
+  ]
+}

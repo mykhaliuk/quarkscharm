@@ -21,7 +21,8 @@ Clicking a selectable day with an active brush SHALL paint both halves;
 clicking one half SHALL paint only that half; dragging SHALL paint every
 selectable day crossed; clicking a painted day with the same brush SHALL
 unpaint it; another brush SHALL replace its nature. Escape SHALL clear the
-whole selection.
+whole selection. A half that belongs to an existing request SHALL NOT be
+painted, except a half of the request being changed.
 
 #### Scenario: Drag paint
 - **WHEN** the user drags from Monday to Friday with the TT brush
@@ -32,11 +33,15 @@ whole selection.
 - **WHEN** the user clicks the afternoon half of a day
 - **THEN** only that half is painted and the range shows "0.5 day"
 
+#### Scenario: Drag across an existing request
+- **WHEN** the user drags across a day that already has a request
+- **THEN** that day stays as it is and only the free days are painted
+
 ### Requirement: Review with preview
 The selection SHALL be grouped into maximal runs of consecutive days with
 the same nature. For each run the system SHALL call quarksUp's preview and
-SHALL display its duration, the balance after, its warnings, its conflicts
-and the colleagues it reports as off. The submit control SHALL be disabled
+SHALL display its duration, the balance after, its warnings and its
+conflicts. The submit control SHALL be disabled
 while any preview is pending or failed.
 
 #### Scenario: Balance warning

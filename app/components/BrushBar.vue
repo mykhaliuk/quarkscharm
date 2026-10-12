@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { computed } from 'vue';
+
 const props = defineProps<{
   brushes: number[];
   active: number | null;
@@ -14,8 +16,21 @@ const emit = defineEmits<{
 }>();
 
 const KEYS = ['T', 'F', 'C'];
+const CHIPS = 3;
+
+const chips = computed(() => props.brushes.slice(0, CHIPS));
+const more = computed(() => props.brushes.slice(CHIPS));
+const moreValue = computed(() =>
+  props.active !== null && more.value.includes(props.active)
+    ? String(props.active)
+    : '',
+);
 
 const toggle = (id: number) => emit('select', props.active === id ? null : id);
+const pick = (event: Event) => {
+  const value = (event.target as HTMLSelectElement).value;
+  emit('select', value === '' ? null : Number(value));
+};
 </script>
 
 <template>
@@ -33,7 +48,7 @@ const toggle = (id: number) => emit('select', props.active === id ? null : id);
       No nature to paint with: quarksUp returned none of TT, FOFF or CP.
     </span>
     <button
-      v-for="(id, i) in brushes"
+      v-for="(id, i) in chips"
       :key="id"
       type="button"
       class="chip label"
@@ -46,6 +61,27 @@ const toggle = (id: number) => emit('select', props.active === id ? null : id);
       {{ label(id) }}
       <kbd v-if="i < KEYS.length">{{ KEYS[i] }}</kbd>
     </button>
+    <label
+      v-if="more.length > 0"
+      class="more chip label"
+      :class="{ active: moreValue !== '' }"
+    >
+      <span
+        v-if="moreValue !== ''"
+        class="sw"
+        :style="`background: var(${colorToken(Number(moreValue))})`"
+      ></span>
+      <span class="more-label">{{
+        moreValue !== '' ? label(Number(moreValue)) : '⋯'
+      }}</span>
+      <span class="chev">▾</span>
+      <select :value="moreValue" data-testid="brush-more" @change="pick">
+        <option value="">More natures</option>
+        <option v-for="id in more" :key="id" :value="String(id)">
+          {{ label(id) }}
+        </option>
+      </select>
+    </label>
   </div>
 </template>
 
@@ -73,6 +109,7 @@ const toggle = (id: number) => emit('select', props.active === id ? null : id);
 }
 
 .chip {
+  white-space: nowrap;
   display: inline-flex;
   align-items: center;
   gap: var(--space-2);
@@ -99,6 +136,35 @@ const toggle = (id: number) => emit('select', props.active === id ? null : id);
   width: 12px;
   height: 12px;
   border-radius: 3px;
+  box-shadow: inset 0 0 0 1px var(--hairline-2);
+}
+
+.more {
+  position: relative;
+}
+
+.more-label {
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.chev {
+  color: var(--ink-2);
+  font-size: 11px;
+}
+
+.more select {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.more:has(select:focus-visible) {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 
 kbd {

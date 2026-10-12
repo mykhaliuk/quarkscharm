@@ -26,12 +26,6 @@ const balance = computed(() => {
   return { before: nature.balance, after: nature.balance - duration.value };
 });
 const trim = (n: number) => String(Math.round(n * 100) / 100);
-const initials = (name: string) =>
-  name
-    .split(' ')
-    .map((part) => part[0] ?? '')
-    .join('')
-    .slice(0, 2);
 </script>
 
 <template>
@@ -81,25 +75,6 @@ const initials = (name: string) =>
       >
         {{ conflict }}
       </p>
-      <div v-if="preview.overlaps.length > 0" class="faces caption">
-        <span
-          v-for="overlap in preview.overlaps"
-          :key="overlap.employeeId"
-          class="face"
-          data-testid="overlap"
-        >
-          <img
-            v-if="overlap.avatarUrl"
-            :src="overlap.avatarUrl"
-            :alt="overlap.name"
-            class="avatar"
-          />
-          <span v-else class="avatar initials">{{
-            initials(overlap.name)
-          }}</span>
-          <span>{{ overlap.name }}</span>
-        </span>
-      </div>
     </template>
     <p
       v-else-if="entry?.status === 'rejected'"
@@ -138,6 +113,7 @@ const initials = (name: string) =>
   width: 12px;
   height: 12px;
   border-radius: 3px;
+  box-shadow: inset 0 0 0 1px var(--hairline-2);
 }
 
 .dates {
@@ -170,38 +146,12 @@ const initials = (name: string) =>
   background: var(--error-soft);
 }
 
-.faces {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-2);
-  color: var(--ink-2);
-}
-
-.face {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.avatar {
-  width: 20px;
-  height: 20px;
-  border-radius: var(--radius-pill);
-  object-fit: cover;
-}
-
-.initials {
-  display: inline-grid;
-  place-items: center;
-  font-size: 10px;
-  background: var(--surface-sunk);
-}
-
 .muted {
   color: var(--ink-3);
 }
 
 .btn {
+  white-space: nowrap;
   padding: 2px var(--space-2);
   border-radius: var(--radius-btn);
   border: 1px solid var(--hairline-2);

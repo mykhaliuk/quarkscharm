@@ -23,6 +23,24 @@ const run = (
 const tick = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 describe('previews store', () => {
+  test('reset drops the old answers and previews the current runs again', async () => {
+    let calls = 0;
+    const store = createPreviews({
+      preview: async () => {
+        calls++;
+        return preview;
+      },
+      debounceMs: 10,
+    });
+    store.sync([run('17:2026-11-02:0')]);
+    await tick(30);
+    store.reset([run('17:2026-11-02:0')]);
+    expect(store.state.get('17:2026-11-02:0')?.status).toBe('loading');
+    await tick(30);
+    expect(store.state.get('17:2026-11-02:0')?.status).toBe('ready');
+    expect(calls).toBe(2);
+  });
+
   test('previews a run after the debounce and maps the answer', async () => {
     const calls: string[] = [];
     const store = createPreviews({

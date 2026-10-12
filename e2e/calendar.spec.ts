@@ -45,11 +45,11 @@ test('the fixture year renders painted halves, holidays and pending dots', async
   await expect(page.locator('[data-date="2026-10-12"]')).toHaveClass(/today/);
 });
 
-test('hover shows the request card, click pins it, Escape unpins', async ({
+test('a click shows the request card, a second click or Escape closes it', async ({
   page,
 }) => {
   await connect(page);
-  await page.locator('[data-date="2026-10-22"]').hover();
+  await page.locator('[data-date="2026-10-22"]').click();
   const card = page.getByTestId('request-card');
   await expect(card).toBeVisible();
   await expect(card).toContainText('Télétravail');
@@ -58,10 +58,17 @@ test('hover shows the request card, click pins it, Escape unpins', async ({
   await expect(card).toContainText('pending');
   await expect(card.getByRole('button', { name: 'Change' })).toBeVisible();
   await expect(card.getByRole('button', { name: 'Cancel' })).toBeVisible();
-  await page.locator('[data-date="2026-10-22"]').click();
   await page.mouse.move(5, 5);
   await expect(card).toBeVisible();
+  await expect(page.locator('[data-date="2026-10-22"]')).toHaveClass(/focused/);
   await page.keyboard.press('Escape');
+  await expect(card).toBeHidden();
+  await expect(page.locator('[data-date="2026-10-22"]')).not.toHaveClass(
+    /focused/,
+  );
+  await page.locator('[data-date="2026-10-22"]').click();
+  await expect(card).toBeVisible();
+  await page.locator('[data-date="2026-10-22"]').click();
   await expect(card).toBeHidden();
 });
 
@@ -69,7 +76,7 @@ test('a request without a cancel workflow shows no cancel control', async ({
   page,
 }) => {
   await connect(page);
-  await page.locator('[data-date="2026-10-14"]').hover();
+  await page.locator('[data-date="2026-10-14"]').click();
   const card = page.getByTestId('request-card');
   await expect(card).toBeVisible();
   await expect(card).toContainText('Congés Payés');

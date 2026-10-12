@@ -98,13 +98,18 @@ export const createPreviews = ({ preview, debounceMs = 250 }: Deps) => {
     for (const key of Array.from(state.keys())) drop(key);
   };
 
+  const reset = (runs: KeyedRun[]) => {
+    clear();
+    sync(runs);
+  };
+
   const allReady = computed(() => {
     for (const entry of state.values())
       if (entry.status !== 'ready') return false;
     return true;
   });
 
-  return { state, sync, retry, clear, allReady };
+  return { state, sync, retry, clear, reset, allReady };
 };
 
 export type PreviewStore = ReturnType<typeof createPreviews>;

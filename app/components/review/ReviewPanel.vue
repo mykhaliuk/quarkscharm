@@ -96,10 +96,12 @@ h2 {
 }
 
 .hint {
-  margin-right: auto;
+  flex: 1;
+  min-width: 0;
 }
 
 .btn {
+  white-space: nowrap;
   padding: 6px var(--space-3);
   border-radius: var(--radius-btn);
   border: 1px solid var(--hairline-2);

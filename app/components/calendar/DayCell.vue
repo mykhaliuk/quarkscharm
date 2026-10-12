@@ -11,6 +11,7 @@ const props = defineProps<{
   today: boolean;
   pending: boolean;
   selected: boolean;
+  focused?: boolean;
   colorToken: (natureId: number | null) => string;
 }>();
 
@@ -31,11 +32,19 @@ const fill = (half: 'am' | 'pm') => {
     ? undefined
     : `background: var(${props.colorToken(paint.natureId)})`;
 };
+const numberColor = computed(() => {
+  const paint = props.slot.am;
+  if (!full.value || paint === null) return undefined;
+  const token = props.colorToken(paint.natureId).slice(2);
+  return `--cell-on: var(--on-${token}, var(--on-nature))`;
+});
 const classes = computed(() => ({
   muted: props.muted,
+  holiday: props.holiday !== null,
   today: props.today,
   pending: props.pending,
   selected: props.selected,
+  focused: props.focused === true,
   full: full.value,
   painted: props.slot.am !== null || props.slot.pm !== null,
 }));
@@ -45,6 +54,7 @@ const classes = computed(() => ({
   <div
     class="cell"
     :class="classes"
+    :style="numberColor"
     :aria-label="holiday ?? undefined"
     :data-date="date"
     :data-selectable="String(!muted)"
@@ -105,13 +115,43 @@ const classes = computed(() => ({
   color: var(--cell-muted-fg);
 }
 
-.full .n {
-  color: var(--on-nature);
+.holiday {
+  background: var(--cell-holiday-bg);
 }
 
-.today {
-  outline: 2px solid var(--cell-today);
-  outline-offset: 1px;
+.holiday .n {
+  color: var(--cell-holiday-fg);
+}
+
+.full .n {
+  color: var(--cell-on, var(--on-nature));
+}
+
+.cell:not(.muted) {
+  cursor: pointer;
+}
+
+.today::before,
+.focused::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius-cell);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.today::before {
+  border: 2px solid var(--cell-today);
+}
+
+.focused::before {
+  border: 2px solid var(--ink);
+}
+
+.today.focused::before {
+  border-color: var(--ink);
+  box-shadow: inset 0 0 0 2px var(--cell-today);
 }
 
 .pending::after {
@@ -126,11 +166,13 @@ const classes = computed(() => ({
   box-shadow: 0 0 0 1px var(--ink-2);
 }
 
-.selected .half {
-  box-shadow: inset 0 0 0 1px var(--cell-selected);
-}
-
-.selected .half[style=''] {
-  box-shadow: none;
+.selected::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius-cell);
+  border: 1px dashed var(--cell-selected);
+  pointer-events: none;
+  z-index: 1;
 }
 </style>

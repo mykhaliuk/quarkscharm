@@ -32,11 +32,3 @@ beyond the page lifetime.
 - **WHEN** the focused day moves to another month
 - **THEN** that month's planner is fetched once and kept in memory for the
   session
-
-### Requirement: Overlaps in review
-While a run is being reviewed, the run SHALL list the colleagues quarksUp's
-preview reports as off on those dates.
-
-#### Scenario: Two colleagues off
-- **WHEN** a run of 22–23 Oct is previewed and two colleagues overlap
-- **THEN** the run shows their two avatars and names

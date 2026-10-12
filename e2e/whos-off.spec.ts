@@ -33,7 +33,7 @@ test('the column lists the colleagues off today with am/pm marks', async ({
     beginDate: '2026-10-01T00:00:00Z',
     endDate: '2026-10-31T23:00:00Z',
     top: '500',
-    thumbnails: 'small',
+    thumbnails: 'medium',
   });
 });
 

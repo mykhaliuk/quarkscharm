@@ -11,6 +11,18 @@ const build = (over: Partial<Parameters<typeof createEntitlements>[0]> = {}) =>
     ...over,
   });
 
+const undated = (
+  id: number,
+  periodId: number,
+  natureId: number,
+  balance: number,
+) => ({
+  ...entitlements[0]!,
+  id,
+  balance,
+  period: { id: periodId, natureId, agreement: { id: 6, label: 'Fulll' } },
+});
+
 describe('entitlements store', () => {
   test('load keeps the current and the next period per nature, current first', async () => {
     const store = build();
@@ -41,6 +53,19 @@ describe('entitlements store', () => {
     });
     await store.load();
     expect(store.counters.value.map((c) => c.id)).not.toContain(300);
+  });
+
+  test('without period dates the latest period shows, older ones only with a balance', async () => {
+    const store = build({
+      getEntitlements: async () => [
+        undated(224, 33, 14, 0),
+        undated(388, 38, 14, 4.82),
+        undated(300, 30, 14, 1.5),
+        undated(656, 42, 17, 7.65),
+      ],
+    });
+    await store.load();
+    expect(store.counters.value.map((c) => c.id)).toEqual([388, 300, 656]);
   });
 
   test('tsa entitlements with the same shape join the counters', async () => {

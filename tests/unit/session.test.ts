@@ -72,7 +72,7 @@ describe('connect', () => {
       employeeId: 1234,
       firstName: 'Volodymyr',
       lastName: 'M',
-      pictureUrl: 'm',
+      pictureUrl: 'u',
       timeZone: 'Europe/Paris',
     });
     expect(memory.get('qc.tenant')).toBe('"fulll"');

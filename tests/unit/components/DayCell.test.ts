@@ -14,6 +14,22 @@ const base = {
 };
 
 describe('DayCell', () => {
+  test('a full day takes the number colour of its nature, else on-nature', () => {
+    const wrapper = mount(DayCell, {
+      props: {
+        ...base,
+        colorToken: () => '--nature-tt',
+        slot: {
+          am: { natureId: 75, requestId: 155 },
+          pm: { natureId: 75, requestId: 155 },
+        },
+      },
+    });
+    expect(wrapper.attributes('style')).toContain(
+      '--cell-on: var(--on-nature-tt, var(--on-nature))',
+    );
+  });
+
   test('renders a pm-only cell with the nature colour on the afternoon half', () => {
     const wrapper = mount(DayCell, {
       props: {
@@ -38,7 +54,9 @@ describe('DayCell', () => {
         holiday: 'Armistice 1918',
       },
     });
-    expect(wrapper.classes()).toContain('muted');
+    expect(wrapper.classes()).toEqual(
+      expect.arrayContaining(['muted', 'holiday']),
+    );
     expect(wrapper.attributes('aria-label')).toBe('Armistice 1918');
     expect(wrapper.attributes('data-selectable')).toBe('false');
   });

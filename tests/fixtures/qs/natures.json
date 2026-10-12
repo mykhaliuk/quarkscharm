@@ -1,56 +1,59 @@
-[
-  {
-    "id": 75,
-    "reference": "TT",
-    "label": "Télétravail",
-    "paidLeave": false,
-    "entitlementAccruable": false,
-    "timeSavingAccount": false,
-    "isActive": true
-  },
-  {
-    "id": 17,
-    "reference": "FOFF",
-    "label": "Fulll Off",
-    "paidLeave": true,
-    "entitlementAccruable": true,
-    "timeSavingAccount": false,
-    "isActive": true
-  },
-  {
-    "id": 14,
-    "reference": "CP",
-    "label": "Congés Payés",
-    "paidLeave": true,
-    "entitlementAccruable": true,
-    "timeSavingAccount": false,
-    "isActive": true
-  },
-  {
-    "id": 54,
-    "reference": "CETCP",
-    "label": "CET jours CP",
-    "paidLeave": true,
-    "entitlementAccruable": false,
-    "timeSavingAccount": true,
-    "isActive": true
-  },
-  {
-    "id": 55,
-    "reference": "RTT",
-    "label": "RTT",
-    "paidLeave": true,
-    "entitlementAccruable": true,
-    "timeSavingAccount": false,
-    "isActive": true
-  },
-  {
-    "id": 32,
-    "reference": "MA",
-    "label": "Arrêt maladie",
-    "paidLeave": false,
-    "entitlementAccruable": false,
-    "timeSavingAccount": false,
-    "isActive": true
-  }
-]
+{
+  "reference": "AbsenceNature",
+  "items": [
+    {
+      "id": 75,
+      "reference": "TT",
+      "label": "Télétravail",
+      "paidLeave": false,
+      "entitlementAccruable": false,
+      "timeSavingAccount": false,
+      "isActive": true
+    },
+    {
+      "id": 17,
+      "reference": "FOFF",
+      "label": "Fulll Off",
+      "paidLeave": true,
+      "entitlementAccruable": true,
+      "timeSavingAccount": false,
+      "isActive": true
+    },
+    {
+      "id": 14,
+      "reference": "CP",
+      "label": "Congés Payés",
+      "paidLeave": true,
+      "entitlementAccruable": true,
+      "timeSavingAccount": false,
+      "isActive": true
+    },
+    {
+      "id": 54,
+      "reference": "CETCP",
+      "label": "CET jours CP",
+      "paidLeave": true,
+      "entitlementAccruable": false,
+      "timeSavingAccount": true,
+      "isActive": true
+    },
+    {
+      "id": 55,
+      "reference": "RTT",
+      "label": "RTT",
+      "paidLeave": true,
+      "entitlementAccruable": true,
+      "timeSavingAccount": false,
+      "isActive": true
+    },
+    {
+      "id": 32,
+      "reference": "MA",
+      "label": "Arrêt maladie",
+      "paidLeave": false,
+      "entitlementAccruable": false,
+      "timeSavingAccount": false,
+      "isActive": true
+    }
+  ]
+}

@@ -84,9 +84,9 @@ describe('toColleague', () => {
     });
   });
 
-  test('uses the picture url as avatar', () => {
+  test('uses the full picture url as avatar, not the small thumbnail', () => {
     const colleague = toColleague(plannerService[0]!.employees[1]!);
-    expect(colleague.avatarUrl).toBe('https://cdn.example.test/p/9002-s.png');
+    expect(colleague.avatarUrl).toBe('https://cdn.example.test/p/9002.png');
     expect(colleague.slots.get('2026-10-12')).toEqual({
       am: { natureId: null, requestId: 7001 },
       pm: { natureId: null, requestId: 7001 },

@@ -28,6 +28,20 @@ test('a click without a brush paints nothing and highlights the chips', async ({
   await expect(page.getByTestId('brush-bar')).toHaveClass(/highlighted/);
 });
 
+test('the brush key again or Escape on an empty selection drops the brush', async ({
+  page,
+}) => {
+  await connect(page);
+  const chip = page.getByTestId('brush-bar').locator('[data-nature-id="17"]');
+  await page.keyboard.press('f');
+  await expect(chip).toHaveAttribute('aria-pressed', 'true');
+  await page.keyboard.press('f');
+  await expect(chip).toHaveAttribute('aria-pressed', 'false');
+  await page.keyboard.press('f');
+  await page.keyboard.press('Escape');
+  await expect(chip).toHaveAttribute('aria-pressed', 'false');
+});
+
 test('drag Monday to Friday paints five days and the panel lists one run', async ({
   page,
 }) => {
@@ -56,16 +70,7 @@ test('drag Monday to Friday paints five days and the panel lists one run', async
   await expect(rows.first().getByTestId('segment')).toHaveCount(1);
   await expect(rows.first()).toContainText('3 days');
   await expect(rows.first().getByTestId('balance-after')).toHaveText('6 → 3');
-  const overlaps = rows.first().getByTestId('overlap');
-  await expect(overlaps).toHaveCount(2);
-  await expect(
-    overlaps.nth(0).getByRole('img', { name: 'Bea Sample' }),
-  ).toHaveAttribute('src', 'https://cdn.example.test/p/9002-s.png');
-  await expect(overlaps.nth(0)).toContainText('Bea Sample');
-  await expect(overlaps.nth(1).getByRole('img')).toHaveCount(0);
-  await expect(overlaps.nth(1)).toContainText('CD');
-  await expect(overlaps.nth(1)).toContainText('Cyr Demo');
-  expect(qs.callsTo(/planners\/service$/).length).toBeLessThanOrEqual(1);
+  await expect(rows.first().getByTestId('overlap')).toHaveCount(0);
   await expect(panel.getByRole('button', { name: 'Submit 1' })).toBeEnabled();
   await expect
     .poll(() =>

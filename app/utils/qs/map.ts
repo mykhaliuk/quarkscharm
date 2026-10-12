@@ -133,7 +133,10 @@ const fullName = (employee: RawEmployee): string =>
   `${employee.firstName} ${employee.lastName}`.trim();
 
 const avatarOf = (employee: RawEmployee): string | null =>
-  employee.picture?.thumbnails?.small ?? employee.picture?.url ?? null;
+  employee.picture?.url ??
+  employee.picture?.thumbnails?.medium ??
+  employee.picture?.thumbnails?.small ??
+  null;
 
 export const toColleague = (raw: RawPlannerEmployee): Colleague => ({
   employeeId: raw.id,

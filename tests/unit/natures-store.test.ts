@@ -2,16 +2,17 @@ import { describe, expect, test } from 'bun:test';
 import { createNatureStore } from '~/utils/natures-store';
 import natures from '../fixtures/qs/natures.json';
 
-const build = () => createNatureStore({ getNatures: async () => natures });
+const build = () =>
+  createNatureStore({ getNatures: async () => natures.items });
 
 describe('natures store', () => {
-  test('brushes resolve the default references to ids in order', async () => {
+  test('brushes start with the default references, then every active nature by label', async () => {
     const store = build();
     await store.load();
-    expect(store.brushes.value).toEqual([75, 17, 14]);
+    expect(store.brushes.value).toEqual([75, 17, 14, 32, 54, 55]);
   });
 
-  test('a nature seen in a preview joins the brushes once, in first-seen order', async () => {
+  test('a nature seen in a preview moves up, in first-seen order', async () => {
     const store = build();
     await store.load();
     store.noteSeen([55, 75, 32]);
@@ -34,7 +35,7 @@ describe('natures store', () => {
     const store = createNatureStore({
       getNatures: async () => {
         calls++;
-        return natures;
+        return natures.items;
       },
     });
     await Promise.all([store.load(), store.load()]);
@@ -48,7 +49,7 @@ describe('natures store', () => {
       getNatures: async () => {
         calls++;
         if (calls === 1) throw new Error('down');
-        return natures;
+        return natures.items;
       },
     });
     await store.load();
@@ -59,12 +60,15 @@ describe('natures store', () => {
     expect(store.byId.value.size).toBe(6);
   });
 
-  test('an answer with no matching default brush is ready but empty', async () => {
+  test('an answer without the default references still lists the active natures', async () => {
     const store = createNatureStore({
-      getNatures: async () => [{ id: 1, reference: 'XX', label: 'Other' }],
+      getNatures: async () => [
+        { id: 1, reference: 'XX', label: 'Other' },
+        { id: 2, reference: 'YY', label: 'Gone', isActive: false },
+      ],
     });
     await store.load();
     expect(store.status.value).toBe('ready');
-    expect(store.brushes.value).toEqual([]);
+    expect(store.brushes.value).toEqual([1]);
   });
 });

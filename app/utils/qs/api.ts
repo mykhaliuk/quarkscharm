@@ -6,6 +6,7 @@ import type {
   RawCreateEnvelope,
   RawEntitlement,
   RawHolidays,
+  RawItemSet,
   RawMe,
   RawNature,
   RawPlannerEmployee,
@@ -21,7 +22,7 @@ import type {
 const LOCALE = { locale: 'fr-FR' };
 const REPRESENTATION = { prefer: 'return=representation' };
 const PREVIEW_QUERY = {
-  thumbnails: 'small',
+  thumbnails: 'medium',
   overlapScope: 'Service',
   details: 'default,Conflicts,Overlaps',
   isSocialSecurity: 'false',
@@ -36,15 +37,24 @@ export const getMe = (tenant: string, token: string) =>
     credentials: { tenant, token },
   });
 
-export const getNatures = () =>
-  qsFetch<RawNature[]>('org/organization/metadata/absenceNature', {
-    query: { includeInactive: 'true', ...LOCALE },
-  });
+const items = <T>(answer: RawItemSet<T> | T[]): T[] =>
+  Array.isArray(answer) ? answer : answer.items;
 
-export const getStatuses = () =>
-  qsFetch<RawStatus[]>('org/organization/metadata/absenceStatus', {
-    query: LOCALE,
-  });
+export const getNatures = async (): Promise<RawNature[]> =>
+  items(
+    await qsFetch<RawItemSet<RawNature> | RawNature[]>(
+      'org/organization/metadata/absenceNature',
+      { query: { includeInactive: 'true', ...LOCALE } },
+    ),
+  );
+
+export const getStatuses = async (): Promise<RawStatus[]> =>
+  items(
+    await qsFetch<RawItemSet<RawStatus> | RawStatus[]>(
+      'org/organization/metadata/absenceStatus',
+      { query: LOCALE },
+    ),
+  );
 
 export const getEntitlements = (employeeId: number) =>
   qsFetch<RawEntitlement[]>('times/v3/entitlements', {
@@ -99,7 +109,7 @@ export const getPlannerService = (beginDate: string, endDate: string) =>
       beginDate: dayStart(beginDate),
       endDate: dayEnd(endDate),
       top: 500,
-      thumbnails: 'small',
+      thumbnails: 'medium',
       ...LOCALE,
     },
   });

@@ -41,9 +41,9 @@ const toMe = (raw: MeRaw): Me => ({
   firstName: raw.employee.firstName,
   lastName: raw.employee.lastName,
   pictureUrl:
+    raw.picture?.url ??
     raw.picture?.thumbnails?.medium ??
     raw.picture?.thumbnails?.small ??
-    raw.picture?.url ??
     null,
   timeZone: raw.timeZone ?? 'Europe/Paris',
 });

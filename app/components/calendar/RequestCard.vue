@@ -19,8 +19,6 @@ const props = defineProps<{
 const emit = defineEmits<{
   (e: 'change', request: AbsenceRequest): void;
   (e: 'cancel', request: AbsenceRequest): void;
-  (e: 'hold'): void;
-  (e: 'release'): void;
 }>();
 
 const confirm = createConfirmTimer({ timeoutMs: CONFIRM_MS });
@@ -108,6 +106,7 @@ const accept = () => confirm.accept(async () => emit('cancel', props.request));
   width: 12px;
   height: 12px;
   border-radius: 3px;
+  box-shadow: inset 0 0 0 1px var(--hairline-2);
 }
 
 .status {
@@ -135,6 +134,7 @@ const accept = () => confirm.accept(async () => emit('cancel', props.request));
 }
 
 .btn {
+  white-space: nowrap;
   padding: 4px var(--space-3);
   border-radius: var(--radius-btn);
   border: 1px solid var(--hairline-2);

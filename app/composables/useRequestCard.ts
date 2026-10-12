@@ -1,7 +1,5 @@
 import type { AbsenceRequest } from '~/utils/qs/map';
 
-const HOVER_DELAY_MS = 150;
-const LEAVE_DELAY_MS = 250;
 const CARD_WIDTH = 300;
 const CARD_HEIGHT = 150;
 
@@ -45,29 +43,20 @@ export const useRequestCard = (
     clearTimer();
     pinned.value = false;
     request.value = null;
+    date.value = null;
   };
 
-  const enter = (date: string) => {
-    if (pinned.value) return;
-    clearTimer();
-    if (requestIdOf(date) === null) return;
-    timer = setTimeout(() => show(date), HOVER_DELAY_MS);
-  };
+  const date = ref<string | null>(null);
 
-  const leave = () => {
-    if (pinned.value) return;
+  const pin = (ymd: string) => {
+    if (requestIdOf(ymd) === null) return;
+    if (pinned.value && date.value === ymd) {
+      hide();
+      return;
+    }
     clearTimer();
-    timer = setTimeout(() => {
-      request.value = null;
-    }, LEAVE_DELAY_MS);
-  };
-
-  const hold = () => clearTimer();
-
-  const pin = (date: string) => {
-    if (requestIdOf(date) === null) return;
-    clearTimer();
-    show(date);
+    show(ymd);
+    date.value = ymd;
     pinned.value = true;
   };
 
@@ -91,5 +80,5 @@ export const useRequestCard = (
     clearTimer();
   });
 
-  return { request, anchor, pinned, enter, leave, hold, pin, hide };
+  return { request, anchor, pinned, date, pin, hide };
 };
