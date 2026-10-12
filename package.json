@@ -15,7 +15,11 @@
     "fmt": "oxfmt .",
     "fmt:check": "oxfmt --check .",
     "typecheck": "nuxt typecheck",
-    "test:unit": "bun test tests/unit"
+    "test:unit": "bun test tests/unit",
+    "rules:sync": "node scripts/sync-rules.js",
+    "commits:check": "node scripts/check-commits.js",
+    "spec:check": "openspec validate --all --strict --no-interactive && openspec validate --archived --no-interactive",
+    "spec:status": "openspec list"
   },
   "dependencies": {
     "nuxt": "^4.6.1",
@@ -23,6 +27,7 @@
     "vue-router": "^5.4.0"
   },
   "devDependencies": {
+    "@fission-ai/openspec": "1.12.0",
     "@types/bun": "^1.4.3",
     "oxfmt": "^0.72.0",
     "oxlint": "^1.87.0",
