@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ONE_RANGE_MESSAGE } from '~/utils/submit-store';
 import type { PreviewEntry } from '~/utils/previews-store';
 import type { KeyedRun } from '~/utils/selection-store';
 
@@ -42,6 +43,14 @@ const emit = defineEmits<{
       :color-token="colorToken"
       @retry="emit('retry', $event)"
     />
+    <p
+      v-if="editing && runs.length > 1"
+      class="caption split"
+      data-testid="one-range"
+      role="alert"
+    >
+      {{ ONE_RANGE_MESSAGE }}
+    </p>
     <div v-if="runs.length > 0" class="actions">
       <span class="caption hint">Enter to submit · Escape to clear</span>
       <button type="button" class="btn label" @click="emit('clear')">
@@ -61,6 +70,13 @@ const emit = defineEmits<{
 </template>
 
 <style scoped>
+.split {
+  margin: 0;
+  padding: 4px var(--space-2);
+  border-radius: 6px;
+  background: var(--warn-soft);
+}
+
 .panel {
   display: grid;
   gap: var(--space-3);

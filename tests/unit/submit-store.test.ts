@@ -1,5 +1,9 @@
 import { describe, expect, test } from 'bun:test';
-import { buildBody, createSubmit } from '~/utils/submit-store';
+import {
+  buildBody,
+  createSubmit,
+  ONE_RANGE_MESSAGE,
+} from '~/utils/submit-store';
 import { QsError } from '~/utils/qs/error';
 import type { KeyedRun } from '~/utils/selection-store';
 import type { Preview } from '~/utils/qs/map';
@@ -132,6 +136,27 @@ describe('createSubmit', () => {
     const result = await submit.submitAll([runs[0]!], previews, 155);
     expect(updates).toEqual([155]);
     expect(result.failed).toBe(0);
+  });
+
+  test('edit mode with two runs sends nothing and explains why', async () => {
+    const updates: number[] = [];
+    const submit = createSubmit({
+      createRequest: async () => {
+        throw new Error('must not create');
+      },
+      updateRequest: async (id) => {
+        updates.push(id);
+        return created.result[0]!.result;
+      },
+      workflowSequenceId: async () => 11281,
+      employeeId: () => 9001,
+      removeRun: () => {},
+      afterChange: async () => {},
+    });
+    const result = await submit.submitAll(runs, previews, 155);
+    expect(updates).toEqual([]);
+    expect(result).toEqual({ submitted: 0, failed: runs.length });
+    expect(submit.errors.get(runs[0]!.key)).toBe(ONE_RANGE_MESSAGE);
   });
 
   test('the workflow sequence is fetched once', async () => {

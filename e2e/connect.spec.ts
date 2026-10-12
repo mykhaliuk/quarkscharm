@@ -113,3 +113,21 @@ test('a 401 on a later call shows the token prompt and a new token resumes', asy
     .toBeGreaterThanOrEqual(4);
   await expect(page.getByTestId('year')).toHaveText('2027');
 });
+
+test('forget token drops the previous selection and data', async ({ page }) => {
+  await installQsFixtures(page);
+  await page.goto('/connect');
+  await page.getByLabel('Tenant').fill('fulll');
+  await page.getByLabel('Token').fill(buildToken());
+  await page.getByRole('button', { name: 'Connect' }).click();
+  await expect(page.locator('[data-date="2026-10-22"]')).toHaveClass(/full/);
+  await page.keyboard.press('f');
+  await page.locator('[data-date="2026-11-02"]').click();
+  await expect(page.getByTestId('run-row')).toHaveCount(1);
+  await page.getByRole('button', { name: 'Forget token' }).click();
+  await expect(page).toHaveURL(/\/connect$/);
+  await page.getByLabel('Token').fill(buildToken());
+  await page.getByRole('button', { name: 'Connect' }).click();
+  await expect(page).toHaveURL(/\/$/);
+  await expect(page.getByTestId('run-row')).toHaveCount(0);
+});

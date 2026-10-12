@@ -12,6 +12,7 @@ const props = defineProps<{
   request: AbsenceRequest;
   anchor: CardAnchor;
   pinned: boolean;
+  error: string | null;
   label: (natureId: number | null) => string;
   colorToken: (natureId: number | null) => string;
 }>();
@@ -56,6 +57,7 @@ const accept = () => confirm.accept(async () => emit('cancel', props.request));
     <div class="dates caption">
       {{ dates }} · {{ formatDays(request.duration) }}
     </div>
+    <p v-if="error" class="error caption" role="alert">{{ error }}</p>
     <div
       v-if="confirm.confirming.value"
       class="acts confirm"
@@ -86,6 +88,13 @@ const accept = () => confirm.accept(async () => emit('cancel', props.request));
 </template>
 
 <style scoped>
+.error {
+  margin: var(--space-2) 0 0;
+  padding: 4px var(--space-2);
+  border-radius: 6px;
+  background: var(--error-soft);
+}
+
 .card {
   position: fixed;
   z-index: 5;

@@ -1,5 +1,8 @@
 import { describe, expect, test } from 'bun:test';
-import { createEntitlements } from '~/utils/entitlements-store';
+import {
+  previewedDurations,
+  createEntitlements,
+} from '~/utils/entitlements-store';
 import entitlements from '../fixtures/qs/entitlements.json';
 
 const build = (over: Partial<Parameters<typeof createEntitlements>[0]> = {}) =>
@@ -93,16 +96,34 @@ describe('entitlements store', () => {
     expect(logged).toHaveLength(1);
   });
 
-  test('after projects the balance minus the previewed durations of that nature', async () => {
+  test('after projects the balance minus the durations charged to that entitlement', async () => {
     const store = build();
     await store.load();
     const durations = new Map([
-      [14, 2],
-      [17, 0.5],
+      [388, 2],
+      [656, 0.5],
     ]);
     expect(store.after(388, durations)).toBe(2.82);
     expect(store.after(656, durations)).toBe(5.5);
-    expect(store.after(389, durations)).toBe(-2);
+    expect(store.after(389, durations)).toBe(0);
+  });
+
+  test('previewed durations sum the segments by entitlement', () => {
+    const segment = (duration: number, entitlementId: number | null) => ({
+      beginDate: '2026-11-02',
+      endDate: '2026-11-02',
+      duration,
+      natureId: 14,
+      entitlementId,
+    });
+    const durations = previewedDurations([
+      [segment(1, 388), segment(0.5, 388)],
+      [segment(2, 656), segment(1, null)],
+    ]);
+    expect(Array.from(durations)).toEqual([
+      [388, 1.5],
+      [656, 2],
+    ]);
   });
 
   test('reload fetches again', async () => {

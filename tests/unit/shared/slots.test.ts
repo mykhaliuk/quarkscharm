@@ -1,5 +1,10 @@
 import { describe, expect, test } from 'bun:test';
-import { segmentsToSlots, slotsToRuns, type Slot } from '~~/shared/utils/slots';
+import {
+  segmentsToSlots,
+  slotsToRuns,
+  withoutRequest,
+  type Slot,
+} from '~~/shared/utils/slots';
 
 const paint = (natureId: number) => ({ natureId, requestId: null });
 const full = (natureId: number): Slot => ({
@@ -163,5 +168,33 @@ describe('slotsToRuns', () => {
       ],
     ]);
     expect(slotsToRuns(selection, selectable)).toEqual([]);
+  });
+});
+
+describe('withoutRequest', () => {
+  test('drops the halves of one request and keeps the others', () => {
+    const slots = new Map<string, Slot>([
+      [
+        '2026-10-12',
+        {
+          am: { natureId: 75, requestId: 155 },
+          pm: { natureId: 14, requestId: 160 },
+        },
+      ],
+      [
+        '2026-10-13',
+        {
+          am: { natureId: 75, requestId: 155 },
+          pm: { natureId: 75, requestId: 155 },
+        },
+      ],
+    ]);
+    const result = withoutRequest(slots, 155);
+    expect(result.get('2026-10-12')).toEqual({
+      am: null,
+      pm: { natureId: 14, requestId: 160 },
+    });
+    expect(result.has('2026-10-13')).toBe(false);
+    expect(slots.get('2026-10-13')?.am?.requestId).toBe(155);
   });
 });

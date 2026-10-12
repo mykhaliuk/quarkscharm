@@ -25,9 +25,11 @@ export const createPreviews = ({ preview, debounceMs = 250 }: Deps) => {
   const state = reactive(new Map<string, PreviewEntry>());
   const timers = new Map<string, ReturnType<typeof setTimeout>>();
   const generations = new Map<string, number>();
+  let lastGeneration = 0;
 
   const request = async (run: KeyedRun) => {
-    const generation = (generations.get(run.key) ?? 0) + 1;
+    lastGeneration++;
+    const generation = lastGeneration;
     generations.set(run.key, generation);
     const signature = signatureOf(run);
     const current = () => state.get(run.key);

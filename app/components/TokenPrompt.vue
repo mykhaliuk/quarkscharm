@@ -6,7 +6,7 @@ const token = ref('');
 const error = ref<string | null>(null);
 const busy = ref(false);
 
-const open = computed(() => session.state.status === 'expired');
+const open = computed(() => session.state.status === 'expired' || busy.value);
 
 const submit = async () => {
   error.value = null;

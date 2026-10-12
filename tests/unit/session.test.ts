@@ -92,6 +92,16 @@ describe('connect', () => {
     expect(memory.get('qc.tenant')).toBe('"fulll"');
   });
 
+  test('a rejected token in the expired prompt keeps the session expired', async () => {
+    const { session } = build(async () => {
+      throw new QsError('rejected', 403);
+    });
+    session.markExpired();
+    const result = await session.connect('fulll', future);
+    expect(result).toEqual({ ok: false, reason: 'rejected' });
+    expect(session.state.status).toBe('expired');
+  });
+
   test('an unavailable backend reports unavailable', async () => {
     const { session } = build(async () => {
       throw new QsError('unavailable');

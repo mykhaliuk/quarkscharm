@@ -2,6 +2,7 @@
 import type { CellPress } from '~/utils/calendar-events';
 import type { AbsenceRequest, Preview } from '~/utils/qs/map';
 import type { YearPart } from '~/utils/year-store';
+import { withoutRequest } from '~~/shared/utils/slots';
 import { isPending } from '~~/shared/utils/status';
 import { today } from '~~/shared/utils/ymd';
 
@@ -38,9 +39,15 @@ const editingRequest = computed(() =>
     : (store.state.requests.find((r) => r.id === selection.editing.value) ??
       null),
 );
+const visibleSlots = computed(() =>
+  selection.editing.value === null
+    ? store.slots.value
+    : withoutRequest(store.slots.value, selection.editing.value),
+);
 const canSubmit = computed(
   () =>
     selection.runs.value.length > 0 &&
+    (selection.editing.value === null || selection.runs.value.length === 1) &&
     selection.runs.value.every(
       (run) => previews.state.get(run.key)?.status === 'ready',
     ) &&
@@ -155,9 +162,15 @@ const startChange = (request: AbsenceRequest) => {
     endHour: request.endHour,
   });
 };
+const cancelError = ref<string | null>(null);
+watch(card.request, () => {
+  cancelError.value = null;
+});
 const confirmCancel = async (request: AbsenceRequest) => {
-  card.hide();
-  await cancel(request);
+  cancelError.value = null;
+  const message = await cancel(request);
+  if (message === null) card.hide();
+  else cancelError.value = message;
 };
 
 const selectBrush = (index: number) => {
@@ -234,7 +247,7 @@ onBeforeUnmount(() => window.removeEventListener('mouseup', onRelease));
       />
       <YearGrid
         :year="year"
-        :slots="store.slots.value"
+        :slots="visibleSlots"
         :selection="selection.paint"
         :is-selectable="store.isSelectable"
         :holidays="store.state.holidays"
@@ -270,7 +283,9 @@ onBeforeUnmount(() => window.removeEventListener('mouseup', onRelease));
     />
     <RequestCard
       v-if="card.request.value"
+      :key="card.request.value.id"
       :request="card.request.value"
+      :error="cancelError"
       :anchor="card.anchor.value"
       :pinned="card.pinned.value"
       :label="natures.label"

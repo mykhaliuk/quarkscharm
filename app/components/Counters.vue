@@ -1,22 +1,17 @@
 <script setup lang="ts">
+import { previewedDurations } from '~/utils/entitlements-store';
 const entitlements = useEntitlements();
 const natures = useNatures();
 const selection = useSelection();
 const previews = usePreviews();
 
-const durations = computed(() => {
-  const sums = new Map<number, number>();
-  for (const run of selection.runs.value) {
-    const entry = previews.state.get(run.key);
-    if (!entry?.preview) continue;
-    const total = entry.preview.segments.reduce(
-      (sum, s) => sum + s.duration,
-      0,
-    );
-    sums.set(run.natureId, (sums.get(run.natureId) ?? 0) + total);
-  }
-  return sums;
-});
+const durations = computed(() =>
+  previewedDurations(
+    selection.runs.value.map(
+      (run) => previews.state.get(run.key)?.preview?.segments ?? [],
+    ),
+  ),
+);
 
 const trim = (value: number) => String(Math.round(value * 100) / 100);
 const projected = (id: number, balance: number): number | null => {

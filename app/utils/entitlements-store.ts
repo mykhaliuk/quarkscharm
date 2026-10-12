@@ -1,5 +1,5 @@
 import { computed, ref } from 'vue';
-import { toEntitlement, type Entitlement } from './qs/map';
+import { toEntitlement, type Entitlement, type PreviewSegment } from './qs/map';
 import type { RawEntitlement } from './qs/types';
 
 export type EntitlementsStatus = 'idle' | 'loading' | 'ready' | 'failed';
@@ -90,12 +90,24 @@ export const createEntitlements = ({
   ): number | null => {
     const entitlement = all.value.find((e) => e.id === entitlementId);
     if (!entitlement) return null;
-    return round(
-      entitlement.balance - (durations.get(entitlement.natureId) ?? 0),
-    );
+    return round(entitlement.balance - (durations.get(entitlement.id) ?? 0));
   };
 
   return { all, status, counters, load, reload, after };
+};
+
+export const previewedDurations = (
+  segmentLists: PreviewSegment[][],
+): Map<number, number> => {
+  const sums = new Map<number, number>();
+  for (const segments of segmentLists) {
+    for (const segment of segments) {
+      if (segment.entitlementId === null) continue;
+      const sum = sums.get(segment.entitlementId) ?? 0;
+      sums.set(segment.entitlementId, round(sum + segment.duration));
+    }
+  }
+  return sums;
 };
 
 export type EntitlementsStore = ReturnType<typeof createEntitlements>;

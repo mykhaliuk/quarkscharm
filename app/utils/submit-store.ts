@@ -5,6 +5,9 @@ import type { RawRequest, RequestBody } from './qs/types';
 import type { KeyedRun } from './selection-store';
 import { toApiDate } from '~~/shared/utils/api-dates';
 
+export const ONE_RANGE_MESSAGE =
+  'A change must stay one continuous range. Remove the other days or submit them separately.';
+
 type Deps = {
   createRequest: (sequenceId: number, body: RequestBody) => Promise<RawRequest>;
   updateRequest: (requestId: number, body: RequestBody) => Promise<RawRequest>;
@@ -90,6 +93,10 @@ export const createSubmit = (deps: Deps) => {
     previews: Map<string, Preview>,
     editing: number | null,
   ): Promise<SubmitResult> => {
+    if (editing !== null && runs.length > 1) {
+      for (const run of runs) errors.set(run.key, ONE_RANGE_MESSAGE);
+      return { submitted: 0, failed: runs.length };
+    }
     submitting.value = true;
     try {
       const ready = runs.filter((run) => previews.has(run.key));

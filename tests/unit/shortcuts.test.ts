@@ -82,3 +82,40 @@ describe('createShortcutHandler', () => {
     expect(prevented).toBe(0);
   });
 });
+
+describe('shortcuts and focused controls', () => {
+  const event = (key: string, tagName: string) => {
+    const state = { prevented: false };
+    return {
+      state,
+      value: {
+        key,
+        target: target(tagName),
+        preventDefault: () => {
+          state.prevented = true;
+        },
+      },
+    };
+  };
+
+  test('Enter on a focused button or link keeps its own action', () => {
+    const hits: string[] = [];
+    const handle = createShortcutHandler({ Enter: () => hits.push('enter') });
+    for (const tag of ['BUTTON', 'A', 'SUMMARY']) {
+      const e = event('Enter', tag);
+      handle(e.value);
+      expect(e.state.prevented).toBe(false);
+    }
+    expect(hits).toEqual([]);
+  });
+
+  test('a paused handler ignores every key', () => {
+    const hits: string[] = [];
+    const handle = createShortcutHandler(
+      { Escape: () => hits.push('escape') },
+      () => true,
+    );
+    handle(event('Escape', 'BODY').value);
+    expect(hits).toEqual([]);
+  });
+});

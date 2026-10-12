@@ -116,3 +116,16 @@ export const slotsToRuns = (
   if (open !== null) runs.push(open);
   return runs;
 };
+
+export const withoutRequest = (
+  slots: Map<string, Slot>,
+  requestId: number,
+): Map<string, Slot> => {
+  const result = new Map<string, Slot>();
+  for (const [ymd, slot] of slots) {
+    const am = slot.am?.requestId === requestId ? null : slot.am;
+    const pm = slot.pm?.requestId === requestId ? null : slot.pm;
+    if (am !== null || pm !== null) result.set(ymd, { am, pm });
+  }
+  return result;
+};

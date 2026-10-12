@@ -23,6 +23,24 @@ const run = (
 const tick = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 describe('previews store', () => {
+  test('a late answer from before a reset does not overwrite the new one', async () => {
+    const pending: ((value: typeof preview) => void)[] = [];
+    const store = createPreviews({
+      preview: () => new Promise((resolve) => pending.push(resolve)),
+      debounceMs: 0,
+    });
+    store.sync([run('17:2026-11-02:0')]);
+    await tick(5);
+    store.reset([run('17:2026-11-02:0')]);
+    await tick(5);
+    pending[1]!(preview);
+    await tick(5);
+    const fresh = store.state.get('17:2026-11-02:0')?.preview;
+    pending[0]!(previewSplit);
+    await tick(5);
+    expect(store.state.get('17:2026-11-02:0')?.preview).toEqual(fresh!);
+  });
+
   test('reset drops the old answers and previews the current runs again', async () => {
     let calls = 0;
     const store = createPreviews({

@@ -19,9 +19,9 @@ const until = computed(() =>
 
 useShortcuts({ ArrowLeft: previous, ArrowRight: next });
 
-const forget = async () => {
+const forget = () => {
   session.forget();
-  await navigateTo('/connect');
+  window.location.assign('/connect');
 };
 </script>
 

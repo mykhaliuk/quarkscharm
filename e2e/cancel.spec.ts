@@ -61,3 +61,32 @@ test('the confirmation times out after five seconds without a request', async ({
   await expect(card.getByRole('button', { name: 'Cancel' })).toBeVisible();
   expect(qs.callsTo(/workflows\/\d+$/)).toHaveLength(0);
 });
+
+test('a failed cancel keeps the card open with the message', async ({
+  page,
+}) => {
+  const qs = await connect(page);
+  await cell(page, '2026-10-22').click();
+  const card = page.getByTestId('request-card');
+  await card.getByRole('button', { name: 'Cancel' }).click();
+  qs.failNext('PUT', /requests\/155\/workflows\/11283$/, 400, {
+    errors: [{ message: 'Request already validated' }],
+  });
+  await card.getByRole('button', { name: 'Yes' }).click();
+  await expect(card).toBeVisible();
+  await expect(card.getByRole('alert')).toHaveText('Request already validated');
+  await expect(cell(page, '2026-10-22')).toHaveClass(/painted/);
+});
+
+test('a confirmation does not carry over to another request', async ({
+  page,
+}) => {
+  await connect(page);
+  await cell(page, '2026-10-22').click();
+  const card = page.getByTestId('request-card');
+  await card.getByRole('button', { name: 'Cancel' }).click();
+  await expect(card.getByRole('button', { name: 'Yes' })).toBeVisible();
+  await cell(page, '2026-12-29').click();
+  await expect(card).toBeVisible();
+  await expect(card.getByRole('button', { name: 'Yes' })).toHaveCount(0);
+});

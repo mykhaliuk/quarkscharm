@@ -99,6 +99,10 @@ export const createSession = ({ fetchMe, now = Date.now }: Deps) => {
         return { ok: false, reason: 'unavailable' };
       }
       dropToken();
+      if (previous === 'expired') {
+        state.status = 'expired';
+        return { ok: false, reason: 'rejected' };
+      }
       state.me = null;
       state.status = 'anonymous';
       return { ok: false, reason: 'rejected' };
