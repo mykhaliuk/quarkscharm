@@ -22,7 +22,8 @@
     "spec:status": "openspec list",
     "check": "bun run lint && bun run fmt:check && bun run typecheck && bun run test:unit && bun run ds:check && bun run spec:check",
     "ds:sync": "node scripts/ds-sync.js",
-    "ds:check": "node scripts/ds-check.js"
+    "ds:check": "node scripts/ds-check.js",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "nuxt": "^4.6.1",
@@ -31,9 +32,11 @@
   },
   "devDependencies": {
     "@fission-ai/openspec": "1.12.0",
+    "@playwright/test": "^1.64.0",
     "@types/bun": "^1.4.3",
     "oxfmt": "^0.72.0",
     "oxlint": "^1.87.0",
+    "playwright": "^1.64.0",
     "typescript": "^5.9.0",
     "vue-tsc": "^3.3.13"
   }
