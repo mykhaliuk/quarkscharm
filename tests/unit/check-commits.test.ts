@@ -104,10 +104,11 @@ describe('checkCommit', () => {
   });
 });
 
+const record = (hash: string, subject: string, trailers: string) =>
+  `${hash}${FIELD}${subject}${FIELD}${trailers}${RECORD}\n`;
+
 describe('parseLog', () => {
   test('splits records and trailer values', () => {
-    const record = (hash: string, subject: string, trailers: string) =>
-      `${hash}${FIELD}${subject}${FIELD}${trailers}${RECORD}\n`;
     const log =
       record('aaa', 'feat: one', 'media-pipeline\n') +
       record('bbb', 'chore: two', '') +
