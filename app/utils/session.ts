@@ -1,17 +1,13 @@
 import { reactive } from 'vue';
 import { QsError } from './qs/error';
+import type { RawMe } from './qs/types';
 import { readJson, remove, writeJson } from './storage';
 import { normalizeToken, tokenExpiry } from './token';
 
 export const TENANT_KEY = 'qc.tenant';
 export const TOKEN_KEY = 'qc.token';
 
-export type MeRaw = {
-  login?: string;
-  employee: { id: number; firstName: string; lastName: string };
-  timeZone?: string;
-  picture?: { url?: string; thumbnails?: { small?: string } } | null;
-};
+export type MeRaw = RawMe;
 
 export type Me = {
   employeeId: number;

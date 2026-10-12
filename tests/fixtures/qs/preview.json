@@ -1,0 +1,84 @@
+{
+  "calendarType": "DayWorked",
+  "natures": [
+    {
+      "id": 17,
+      "reference": "FOFF",
+      "label": "Fulll Off",
+      "threshold": 6,
+      "entitlement": {
+        "id": 656,
+        "periodId": 51,
+        "balance": 6,
+        "earned": 8,
+        "used": 2,
+        "pending": 1
+      },
+      "enforceWholeDayAbsence": false,
+      "enforceEntitlementThreshold": true,
+      "requiresDocument": false
+    },
+    {
+      "id": 14,
+      "reference": "CP",
+      "label": "Congés Payés",
+      "threshold": 4.82,
+      "entitlement": {
+        "id": 388,
+        "periodId": 38,
+        "balance": 4.82,
+        "earned": 8.32,
+        "used": 3.5,
+        "pending": 0
+      },
+      "enforceWholeDayAbsence": false,
+      "enforceEntitlementThreshold": true,
+      "requiresDocument": false
+    },
+    {
+      "id": 75,
+      "reference": "TT",
+      "label": "Télétravail",
+      "threshold": null,
+      "entitlement": null,
+      "enforceWholeDayAbsence": false,
+      "enforceEntitlementThreshold": false,
+      "requiresDocument": false
+    }
+  ],
+  "segments": [
+    {
+      "beginDate": "2026-11-02T00:00:00Z",
+      "endDate": "2026-11-04T23:00:00Z",
+      "duration": 3.0,
+      "expectedDuration": 3.0,
+      "natureId": 17
+    }
+  ],
+  "overlappingRequests": [
+    {
+      "employee": {
+        "id": 9002,
+        "firstName": "Bea",
+        "lastName": "Sample",
+        "picture": { "url": "https://cdn.example.test/p/9002-s.png" }
+      },
+      "beginDate": "2026-11-02T00:00:00+01:00",
+      "endDate": "2026-11-03T23:00:00+01:00",
+      "statusId": 2
+    },
+    {
+      "employee": {
+        "id": 9003,
+        "firstName": "Cyr",
+        "lastName": "Demo",
+        "picture": null
+      },
+      "beginDate": "2026-11-04T00:00:00+01:00",
+      "endDate": "2026-11-04T23:00:00+01:00",
+      "statusId": 1
+    }
+  ],
+  "conflictingEvents": [],
+  "warnings": []
+}

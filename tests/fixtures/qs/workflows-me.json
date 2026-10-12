@@ -1,0 +1,9 @@
+{
+  "TakeLeave": {
+    "label": "Ajouter une absence",
+    "href": "https://api.quarksup.net/times/v3/requests?workflowSequenceId=11281",
+    "sequenceId": 11281,
+    "nextStatus": "Absence_New",
+    "fields": []
+  }
+}

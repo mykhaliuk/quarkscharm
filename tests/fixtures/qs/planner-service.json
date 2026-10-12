@@ -1,0 +1,80 @@
+[
+  {
+    "id": 42,
+    "label": "TECH",
+    "employees": [
+      {
+        "id": 9001,
+        "firstName": "Alex",
+        "lastName": "Example",
+        "job": { "id": 243, "label": "Lead developer" },
+        "position": { "entity": { "label": "TECH" } },
+        "nonWorkingDates": [],
+        "absences": [
+          {
+            "id": 155,
+            "segments": [
+              {
+                "id": 301,
+                "beginDate": "2026-10-22T00:00:00.000Z",
+                "endDate": "2026-10-23T23:00:00.000Z",
+                "duration": 2.0,
+                "natureId": 75,
+                "validated": false
+              }
+            ]
+          }
+        ],
+        "picture": { "url": "https://cdn.example.test/p/9001-s.png" }
+      },
+      {
+        "id": 9002,
+        "firstName": "Bea",
+        "lastName": "Sample",
+        "job": { "id": 250, "label": "Backend developer" },
+        "position": { "entity": { "label": "TECH" } },
+        "nonWorkingDates": [],
+        "absences": [
+          {
+            "id": 7001,
+            "segments": [
+              {
+                "id": 7101,
+                "beginDate": "2026-10-12T00:00:00.000Z",
+                "endDate": "2026-10-12T23:00:00.000Z",
+                "duration": 1.0,
+                "natureId": null,
+                "validated": true
+              }
+            ]
+          }
+        ],
+        "picture": { "url": "https://cdn.example.test/p/9002-s.png" }
+      },
+      {
+        "id": 9003,
+        "firstName": "Cyr",
+        "lastName": "Demo",
+        "job": { "id": 251, "label": "QA" },
+        "position": { "entity": { "label": "TECH" } },
+        "nonWorkingDates": [],
+        "absences": [
+          {
+            "id": 7002,
+            "segments": [
+              {
+                "id": 7102,
+                "beginDate": "2026-10-12T13:00:00.000Z",
+                "endDate": "2026-10-12T23:00:00.000Z",
+                "duration": 0.5,
+                "natureId": null,
+                "validated": true
+              }
+            ]
+          }
+        ],
+        "picture": null
+      }
+    ]
+  }
+]

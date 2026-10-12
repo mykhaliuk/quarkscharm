@@ -1,0 +1,41 @@
+{
+  "calendarType": "DayWorked",
+  "natures": [
+    {
+      "id": 14,
+      "reference": "CP",
+      "label": "Congés Payés",
+      "threshold": 4.82,
+      "entitlement": {
+        "id": 388,
+        "periodId": 38,
+        "balance": 4.82,
+        "earned": 8.32,
+        "used": 3.5,
+        "pending": 0
+      },
+      "enforceWholeDayAbsence": false,
+      "enforceEntitlementThreshold": true,
+      "requiresDocument": false
+    }
+  ],
+  "segments": [
+    {
+      "beginDate": "2026-11-10T00:00:00Z",
+      "endDate": "2026-11-10T23:00:00Z",
+      "duration": 1.0,
+      "expectedDuration": 1.0,
+      "natureId": 14
+    },
+    {
+      "beginDate": "2026-11-12T00:00:00Z",
+      "endDate": "2026-11-12T23:00:00Z",
+      "duration": 1.0,
+      "expectedDuration": 1.0,
+      "natureId": 14
+    }
+  ],
+  "overlappingRequests": [],
+  "conflictingEvents": [],
+  "warnings": ["Le solde sera insuffisant après cette demande."]
+}

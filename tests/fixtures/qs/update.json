@@ -1,0 +1,28 @@
+{
+  "id": 155,
+  "statusId": 1,
+  "date": "2026-10-12T00:00:00+02:00",
+  "beginDate": "2026-10-22T00:00:00+02:00",
+  "endDate": "2026-10-22T23:00:00+02:00",
+  "duration": 1.0,
+  "comment": null,
+  "employee": { "id": 9001, "firstName": "Alex", "lastName": "Example" },
+  "segments": [
+    {
+      "id": 302,
+      "beginDate": "2026-10-22T00:00:00+02:00",
+      "endDate": "2026-10-22T23:00:00+02:00",
+      "duration": 1.0,
+      "natureId": 75
+    }
+  ],
+  "_workflows": {
+    "CancelRequest": {
+      "label": "Annuler la demande",
+      "href": "https://api.quarksup.net/times/v3/requests/155/workflows/11283",
+      "sequenceId": 11283,
+      "nextStatus": "Absence_Cancelled",
+      "fields": []
+    }
+  }
+}

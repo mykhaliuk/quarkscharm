@@ -1,0 +1,84 @@
+{
+  "@odata.count": 3,
+  "value": [
+    {
+      "id": 155,
+      "statusId": 1,
+      "date": "2026-10-12T00:00:00+02:00",
+      "beginDate": "2026-10-22T00:00:00+02:00",
+      "endDate": "2026-10-23T23:00:00+02:00",
+      "duration": 2.0,
+      "comment": null,
+      "_isReadOnly": false,
+      "employee": { "id": 9001, "firstName": "Alex", "lastName": "Example" },
+      "segments": [
+        {
+          "id": 301,
+          "beginDate": "2026-10-22T00:00:00+02:00",
+          "endDate": "2026-10-23T23:00:00+02:00",
+          "duration": 2.0,
+          "natureId": 75
+        }
+      ],
+      "_workflows": {
+        "CancelRequest": {
+          "label": "Annuler la demande",
+          "href": "https://api.quarksup.net/times/v3/requests/155/workflows/11283",
+          "sequenceId": 11283,
+          "nextStatus": "Absence_Cancelled",
+          "fields": []
+        }
+      }
+    },
+    {
+      "id": 160,
+      "statusId": 2,
+      "date": "2026-10-01T00:00:00+02:00",
+      "beginDate": "2026-10-14T13:00:00+02:00",
+      "endDate": "2026-10-14T23:00:00+02:00",
+      "duration": 0.5,
+      "comment": "dentiste",
+      "_isReadOnly": false,
+      "employee": { "id": 9001, "firstName": "Alex", "lastName": "Example" },
+      "segments": [
+        {
+          "id": 310,
+          "beginDate": "2026-10-14T13:00:00+02:00",
+          "endDate": "2026-10-14T23:00:00+02:00",
+          "duration": 0.5,
+          "natureId": 14
+        }
+      ],
+      "_workflows": {}
+    },
+    {
+      "id": 170,
+      "statusId": 2,
+      "date": "2026-11-20T00:00:00+01:00",
+      "beginDate": "2026-12-29T13:00:00+01:00",
+      "endDate": "2027-01-02T12:00:00+01:00",
+      "duration": 2.0,
+      "comment": null,
+      "_isReadOnly": false,
+      "employee": { "id": 9001, "firstName": "Alex", "lastName": "Example" },
+      "segments": [
+        {
+          "id": 320,
+          "beginDate": "2026-12-29T13:00:00+01:00",
+          "endDate": "2027-01-02T12:00:00+01:00",
+          "duration": 2.0,
+          "natureId": 14
+        }
+      ],
+      "_workflows": {
+        "CancelRequest": {
+          "label": "Annuler la demande",
+          "href": "https://api.quarksup.net/times/v3/requests/170/workflows/11290",
+          "sequenceId": 11290,
+          "nextStatus": "Absence_CancelOngoingManager",
+          "fields": []
+        }
+      }
+    }
+  ]
+}

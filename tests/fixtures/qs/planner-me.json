@@ -1,0 +1,45 @@
+{
+  "id": 9001,
+  "firstName": "Alex",
+  "lastName": "Example",
+  "job": { "id": 243, "label": "Lead developer" },
+  "duration": 2.5,
+  "nonWorkingDates": [
+    "2026-10-03T00:00:00.000Z",
+    "2026-10-04T00:00:00.000Z",
+    "2026-10-10T00:00:00.000Z",
+    "2026-10-11T00:00:00.000Z"
+  ],
+  "absences": [
+    {
+      "id": 155,
+      "segments": [
+        {
+          "id": 301,
+          "beginDate": "2026-10-22T00:00:00.000Z",
+          "endDate": "2026-10-23T23:00:00.000Z",
+          "duration": 2.0,
+          "natureId": 75,
+          "validated": false
+        }
+      ],
+      "_links": { "self": "https://api.quarksup.net/times/v3/requests/155" }
+    },
+    {
+      "id": 160,
+      "segments": [
+        {
+          "id": 310,
+          "beginDate": "2026-10-14T13:00:00.000Z",
+          "endDate": "2026-10-14T23:00:00.000Z",
+          "duration": 0.5,
+          "natureId": 14,
+          "validated": true
+        }
+      ],
+      "_links": { "self": "https://api.quarksup.net/times/v3/requests/160" }
+    }
+  ],
+  "engagements": [],
+  "picture": { "url": "https://cdn.example.test/p/9001-s.png" }
+}

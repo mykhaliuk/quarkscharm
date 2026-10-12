@@ -1,0 +1,15 @@
+{
+  "login": "a.example",
+  "employee": { "id": 9001, "firstName": "Alex", "lastName": "Example" },
+  "role": { "type": "Employee" },
+  "timeZone": "Europe/Paris",
+  "locale": "fr-FR",
+  "picture": {
+    "url": "https://cdn.example.test/p/9001.png",
+    "thumbnails": {
+      "small": "https://cdn.example.test/p/9001-s.png",
+      "medium": "https://cdn.example.test/p/9001-m.png",
+      "large": "https://cdn.example.test/p/9001-l.png"
+    }
+  }
+}

@@ -1,0 +1,65 @@
+[
+  {
+    "id": 388,
+    "earned": 8.32,
+    "used": 3.5,
+    "balance": 4.82,
+    "pending": 0,
+    "saved": 0,
+    "period": {
+      "id": 38,
+      "natureId": 14,
+      "beginDate": "2026-06-01T00:00:00+02:00",
+      "endDate": "2027-05-31T23:00:00+02:00",
+      "agreement": { "id": 6, "label": "Fulll (CP + fulll off)" }
+    },
+    "employee": {
+      "id": 9001,
+      "firstName": "Alex",
+      "lastName": "Example",
+      "position": { "serviceId": 42, "entity": { "label": "TECH" } }
+    }
+  },
+  {
+    "id": 389,
+    "earned": 0,
+    "used": 0,
+    "balance": 0,
+    "pending": 0,
+    "saved": 0,
+    "period": {
+      "id": 39,
+      "natureId": 14,
+      "beginDate": "2027-06-01T00:00:00+02:00",
+      "endDate": "2028-05-31T23:00:00+02:00",
+      "agreement": { "id": 6, "label": "Fulll (CP + fulll off)" }
+    },
+    "employee": {
+      "id": 9001,
+      "firstName": "Alex",
+      "lastName": "Example",
+      "position": { "serviceId": 42, "entity": { "label": "TECH" } }
+    }
+  },
+  {
+    "id": 656,
+    "earned": 8,
+    "used": 2,
+    "balance": 6,
+    "pending": 1,
+    "saved": 0,
+    "period": {
+      "id": 51,
+      "natureId": 17,
+      "beginDate": "2026-01-01T00:00:00+01:00",
+      "endDate": "2026-12-31T23:00:00+01:00",
+      "agreement": { "id": 6, "label": "Fulll (CP + fulll off)" }
+    },
+    "employee": {
+      "id": 9001,
+      "firstName": "Alex",
+      "lastName": "Example",
+      "position": { "serviceId": 42, "entity": { "label": "TECH" } }
+    }
+  }
+]
