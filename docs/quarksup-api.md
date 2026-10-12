@@ -297,7 +297,13 @@ calendar year.
 
 1. Token refresh: deliberately out of scope (decision 2026-10-12). The user
    pastes the bearer token by hand, as the cookie was pasted in the Factorial
-   helper, and owns its 1 h lifetime.
+   helper, and owns its 1 h lifetime. Candidate for a later change: the ADFS
+   token endpoint `POST login.quarksup.net/adfs/oauth2/token/` answers
+   `{ access_token, token_type: 'bearer', expires_in: 3600, resource,
+   refresh_token, refresh_token_expires_in: 299, scope: 'openid', id_token }`.
+   The refresh token lives about five minutes, so rotation means a
+   continuous refresh loop, and the Connect screen would have to accept the
+   whole token response, not only the bearer.
 2. People API spec: fetch any `people/v3` response and read its `link` header
    for the openapi URL, if avatars/directory beyond the planner are needed.
 3. (closed) Cancel and update captured live, see §6b/§6c.
