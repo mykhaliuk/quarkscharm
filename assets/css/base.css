@@ -1,0 +1,14 @@
+html,
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 20px;
+  font-variant-numeric: tabular-nums;
+}
+
+* {
+  box-sizing: border-box;
+}
