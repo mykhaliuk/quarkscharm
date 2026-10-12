@@ -83,21 +83,21 @@ describe('createShortcutHandler', () => {
   });
 });
 
-describe('shortcuts and focused controls', () => {
-  const event = (key: string, tagName: string) => {
-    const state = { prevented: false };
-    return {
-      state,
-      value: {
-        key,
-        target: target(tagName),
-        preventDefault: () => {
-          state.prevented = true;
-        },
+const event = (key: string, tagName: string) => {
+  const state = { prevented: false };
+  return {
+    state,
+    value: {
+      key,
+      target: target(tagName),
+      preventDefault: () => {
+        state.prevented = true;
       },
-    };
+    },
   };
+};
 
+describe('shortcuts and focused controls', () => {
   test('Enter on a focused button or link keeps its own action', () => {
     const hits: string[] = [];
     const handle = createShortcutHandler({ Enter: () => hits.push('enter') });

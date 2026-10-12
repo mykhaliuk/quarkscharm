@@ -1,5 +1,5 @@
 import { computed, ref } from 'vue';
-import { toEntitlement, type Entitlement, type PreviewSegment } from './qs/map';
+import { toEntitlement, type Entitlement, type Preview } from './qs/map';
 import type { RawEntitlement } from './qs/types';
 
 export type EntitlementsStatus = 'idle' | 'loading' | 'ready' | 'failed';
@@ -97,15 +97,15 @@ export const createEntitlements = ({
 };
 
 export const previewedDurations = (
-  segmentLists: PreviewSegment[][],
+  runs: { natureId: number | null; preview: Preview }[],
 ): Map<number, number> => {
   const sums = new Map<number, number>();
-  for (const segments of segmentLists) {
-    for (const segment of segments) {
-      if (segment.entitlementId === null) continue;
-      const sum = sums.get(segment.entitlementId) ?? 0;
-      sums.set(segment.entitlementId, round(sum + segment.duration));
-    }
+  for (const run of runs) {
+    const nature = run.preview.natures.find((n) => n.id === run.natureId);
+    if (!nature || nature.entitlementId === null) continue;
+    const total = run.preview.segments.reduce((sum, s) => sum + s.duration, 0);
+    const sum = sums.get(nature.entitlementId) ?? 0;
+    sums.set(nature.entitlementId, round(sum + total));
   }
   return sums;
 };

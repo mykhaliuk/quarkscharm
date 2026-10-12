@@ -5,13 +5,14 @@ const natures = useNatures();
 const selection = useSelection();
 const previews = usePreviews();
 
-const durations = computed(() =>
-  previewedDurations(
-    selection.runs.value.map(
-      (run) => previews.state.get(run.key)?.preview?.segments ?? [],
-    ),
-  ),
-);
+const durations = computed(() => {
+  const runs = [];
+  for (const run of selection.runs.value) {
+    const preview = previews.state.get(run.key)?.preview;
+    if (preview) runs.push({ natureId: run.natureId, preview });
+  }
+  return previewedDurations(runs);
+});
 
 const trim = (value: number) => String(Math.round(value * 100) / 100);
 const projected = (id: number, balance: number): number | null => {

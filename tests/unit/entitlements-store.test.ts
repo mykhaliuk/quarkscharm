@@ -26,6 +26,24 @@ const undated = (
   period: { id: periodId, natureId, agreement: { id: 6, label: 'Fulll' } },
 });
 
+const preview = (durations: number[]) => ({
+  segments: durations.map((duration) => ({
+    beginDate: '2026-06-15',
+    endDate: '2026-06-15',
+    duration,
+    natureId: 17,
+    entitlementId: 656,
+  })),
+  natures: [
+    { id: 14, balance: 4.82, entitlementId: 388 },
+    { id: 17, balance: 7.65, entitlementId: 656 },
+    { id: 75, balance: null, entitlementId: null },
+  ],
+  warnings: [],
+  conflicts: [],
+  overlaps: [],
+});
+
 describe('entitlements store', () => {
   test('load keeps the current and the next period per nature, current first', async () => {
     const store = build();
@@ -108,21 +126,15 @@ describe('entitlements store', () => {
     expect(store.after(389, durations)).toBe(0);
   });
 
-  test('previewed durations sum the segments by entitlement', () => {
-    const segment = (duration: number, entitlementId: number | null) => ({
-      beginDate: '2026-11-02',
-      endDate: '2026-11-02',
-      duration,
-      natureId: 14,
-      entitlementId,
-    });
+  test('previewed durations charge each run to the entitlement of its own nature', () => {
     const durations = previewedDurations([
-      [segment(1, 388), segment(0.5, 388)],
-      [segment(2, 656), segment(1, null)],
+      { natureId: 14, preview: preview([1, 1]) },
+      { natureId: 17, preview: preview([1, 0.5]) },
+      { natureId: 75, preview: preview([1]) },
     ]);
     expect(Array.from(durations)).toEqual([
-      [388, 1.5],
-      [656, 2],
+      [388, 2],
+      [656, 1.5],
     ]);
   });
 
