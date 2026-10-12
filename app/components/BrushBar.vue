@@ -3,11 +3,15 @@ const props = defineProps<{
   brushes: number[];
   active: number | null;
   highlighted: boolean;
+  status: 'idle' | 'loading' | 'ready' | 'failed';
   label: (natureId: number | null) => string;
   colorToken: (natureId: number | null) => string;
 }>();
 
-const emit = defineEmits<{ (e: 'select', natureId: number | null): void }>();
+const emit = defineEmits<{
+  (e: 'select', natureId: number | null): void;
+  (e: 'retry'): void;
+}>();
 
 const KEYS = ['T', 'F', 'C'];
 
@@ -16,6 +20,18 @@ const toggle = (id: number) => emit('select', props.active === id ? null : id);
 
 <template>
   <div class="bar" :class="{ highlighted }" data-testid="brush-bar">
+    <span v-if="props.status === 'failed'" class="note caption" role="alert">
+      The absence natures did not load.
+      <button type="button" class="chip label" @click="emit('retry')">
+        Retry
+      </button>
+    </span>
+    <span
+      v-else-if="props.status === 'ready' && brushes.length === 0"
+      class="note caption"
+    >
+      No nature to paint with: quarksUp returned none of TT, FOFF or CP.
+    </span>
     <button
       v-for="(id, i) in brushes"
       :key="id"
@@ -42,6 +58,14 @@ const toggle = (id: number) => emit('select', props.active === id ? null : id);
   border-radius: var(--radius-btn);
   width: max-content;
   transition: box-shadow 150ms;
+}
+
+.note {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 4px var(--space-2);
+  color: var(--ink-2);
 }
 
 .highlighted {

@@ -42,7 +42,7 @@ describe('natures store', () => {
     expect(calls).toBe(1);
   });
 
-  test('a failed load can be retried', async () => {
+  test('a failed load is visible and can be retried', async () => {
     let calls = 0;
     const store = createNatureStore({
       getNatures: async () => {
@@ -52,8 +52,19 @@ describe('natures store', () => {
       },
     });
     await store.load();
+    expect(store.status.value).toBe('failed');
     expect(store.byId.value.size).toBe(0);
     await store.load();
+    expect(store.status.value).toBe('ready');
     expect(store.byId.value.size).toBe(6);
+  });
+
+  test('an answer with no matching default brush is ready but empty', async () => {
+    const store = createNatureStore({
+      getNatures: async () => [{ id: 1, reference: 'XX', label: 'Other' }],
+    });
+    await store.load();
+    expect(store.status.value).toBe('ready');
+    expect(store.brushes.value).toEqual([]);
   });
 });

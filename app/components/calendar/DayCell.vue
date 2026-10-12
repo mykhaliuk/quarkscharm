@@ -45,7 +45,7 @@ const classes = computed(() => ({
   <div
     class="cell"
     :class="classes"
-    :title="holiday ?? undefined"
+    :aria-label="holiday ?? undefined"
     :data-date="date"
     :data-selectable="String(!muted)"
     :data-request-id="requestId ?? undefined"

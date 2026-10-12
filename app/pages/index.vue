@@ -102,12 +102,28 @@ const onPress = (press: CellPress) => {
     shift: press.event.shiftKey,
   };
 };
+const tooltip = ref<{ text: string; top: number; left: number } | null>(null);
 const onEnter = (date: string) => {
   if (drag !== null) {
     drag.to = date;
     return;
   }
   card.enter(date);
+  const label = store.state.holidays.get(date);
+  if (label === undefined) {
+    tooltip.value = null;
+    return;
+  }
+  const rect = document
+    .querySelector(`[data-date="${date}"]`)
+    ?.getBoundingClientRect();
+  tooltip.value = rect
+    ? { text: label, top: rect.bottom + 4, left: rect.left }
+    : null;
+};
+const onLeave = () => {
+  card.leave();
+  tooltip.value = null;
 };
 const onRelease = () => {
   if (drag === null) return;
@@ -182,9 +198,11 @@ onBeforeUnmount(() => window.removeEventListener('mouseup', onRelease));
         :brushes="natures.brushes.value"
         :active="selection.brush.value"
         :highlighted="brushHighlighted"
+        :status="natures.status.value"
         :label="natures.label"
         :color-token="natures.colorToken"
         @select="selection.setBrush"
+        @retry="natures.load"
       />
       <YearGrid
         :year="year"
@@ -196,9 +214,17 @@ onBeforeUnmount(() => window.removeEventListener('mouseup', onRelease));
         :pending-ids="pendingIds"
         :color-token="natures.colorToken"
         @enter="onEnter"
-        @leave="card.leave"
+        @leave="onLeave"
         @press="onPress"
       />
+      <div
+        v-if="tooltip"
+        class="tooltip caption"
+        data-testid="day-tooltip"
+        :style="`top: ${tooltip.top}px; left: ${tooltip.left}px`"
+      >
+        {{ tooltip.text }}
+      </div>
     </section>
     <ReviewPanel
       :runs="selection.runs.value"
@@ -249,6 +275,17 @@ onBeforeUnmount(() => window.removeEventListener('mouseup', onRelease));
   padding: var(--space-2) var(--space-3);
   background: var(--warn-soft);
   border-radius: var(--radius-card);
+}
+
+.tooltip {
+  position: fixed;
+  z-index: 6;
+  padding: 2px var(--space-2);
+  border-radius: 6px;
+  background: var(--ink);
+  color: var(--bg);
+  pointer-events: none;
+  white-space: nowrap;
 }
 
 .retry {

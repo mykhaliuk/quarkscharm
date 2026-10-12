@@ -29,7 +29,7 @@ describe('DayCell', () => {
     expect(wrapper.classes()).not.toContain('full');
   });
 
-  test('renders a muted holiday with its label as title', () => {
+  test('renders a muted holiday with its label as the accessible name', () => {
     const wrapper = mount(DayCell, {
       props: {
         ...base,
@@ -39,7 +39,7 @@ describe('DayCell', () => {
       },
     });
     expect(wrapper.classes()).toContain('muted');
-    expect(wrapper.attributes('title')).toBe('Armistice 1918');
+    expect(wrapper.attributes('aria-label')).toBe('Armistice 1918');
     expect(wrapper.attributes('data-selectable')).toBe('false');
   });
 

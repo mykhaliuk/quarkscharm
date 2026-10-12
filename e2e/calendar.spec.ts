@@ -37,7 +37,10 @@ test('the fixture year renders painted halves, holidays and pending dots', async
   await expect(half).not.toHaveClass(/pending/);
   const holiday = page.locator('[data-date="2026-11-11"]');
   await expect(holiday).toHaveClass(/muted/);
-  await expect(holiday).toHaveAttribute('title', 'Armistice 1918');
+  await holiday.hover();
+  await expect(page.getByTestId('day-tooltip')).toHaveText('Armistice 1918');
+  await page.locator('[data-date="2026-11-12"]').hover();
+  await expect(page.getByTestId('day-tooltip')).toBeHidden();
   await expect(page.locator('[data-date="2026-10-03"]')).toHaveClass(/muted/);
   await expect(page.locator('[data-date="2026-10-12"]')).toHaveClass(/today/);
 });

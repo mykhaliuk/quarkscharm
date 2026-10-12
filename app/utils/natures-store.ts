@@ -7,18 +7,22 @@ export type NatureDeps = { getNatures: () => Promise<RawNature[]> };
 export const createNatureStore = ({ getNatures }: NatureDeps) => {
   const byId = ref(new Map<number, RawNature>());
   const seen = ref<number[]>([]);
+  const status = ref<'idle' | 'loading' | 'ready' | 'failed'>('idle');
   let loading: Promise<void> | null = null;
-  let loaded = false;
 
   const load = (): Promise<void> => {
-    if (loaded) return Promise.resolve();
+    if (status.value === 'ready') return Promise.resolve();
     if (loading === null) {
+      status.value = 'loading';
       loading = getNatures()
         .then((natures) => {
           byId.value = new Map(natures.map((nature) => [nature.id, nature]));
-          loaded = true;
+          status.value = 'ready';
         })
-        .catch(() => undefined)
+        .catch((error: unknown) => {
+          console.error('natures: load failed', error);
+          status.value = 'failed';
+        })
         .finally(() => {
           loading = null;
         });
@@ -56,7 +60,7 @@ export const createNatureStore = ({ getNatures }: NatureDeps) => {
       id === null ? null : (byId.value.get(id)?.reference ?? null),
     );
 
-  return { byId, brushes, load, noteSeen, label, colorToken };
+  return { byId, status, brushes, load, noteSeen, label, colorToken };
 };
 
 export type NatureStore = ReturnType<typeof createNatureStore>;
