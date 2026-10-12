@@ -1,29 +1,12 @@
 import { getNatures } from '~/utils/qs/api';
 import { whenConnected } from '~/utils/qs/retry';
-import type { RawNature } from '~/utils/qs/types';
-import { natureColorToken } from '~~/shared/utils/natures';
+import { createNatureStore, type NatureStore } from '~/utils/natures-store';
 
-const byId = ref(new Map<number, RawNature>());
-let loading: Promise<void> | null = null;
+let store: NatureStore | null = null;
 
-export const useNatures = () => {
-  const load = (): Promise<void> => {
-    if (loading === null) {
-      loading = whenConnected(getNatures)
-        .then((natures) => {
-          byId.value = new Map(natures.map((nature) => [nature.id, nature]));
-        })
-        .catch(() => {
-          loading = null;
-        });
-    }
-    return loading;
-  };
-  const label = (id: number | null): string =>
-    (id === null ? null : byId.value.get(id)?.label) ?? 'Absence';
-  const colorToken = (id: number | null): string =>
-    natureColorToken(
-      id === null ? null : (byId.value.get(id)?.reference ?? null),
-    );
-  return { byId, load, label, colorToken };
+export const useNatures = (): NatureStore => {
+  if (store === null) {
+    store = createNatureStore({ getNatures: () => whenConnected(getNatures) });
+  }
+  return store;
 };
