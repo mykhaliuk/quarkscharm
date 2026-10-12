@@ -118,6 +118,20 @@ describe('runs', () => {
   });
 });
 
+describe('removeRun', () => {
+  test('drops the days of one run and keeps the others', () => {
+    const s = build();
+    s.setBrush(75);
+    s.paintRange('2026-10-12', '2026-10-13');
+    s.setBrush(14);
+    s.paintHalf('2026-10-15', 'pm');
+    const first = s.runs.value[0]!;
+    s.removeRun(first);
+    expect([...s.paint.keys()]).toEqual(['2026-10-15']);
+    expect(s.runs.value.map((run) => run.key)).toEqual(['14:2026-10-15:13']);
+  });
+});
+
 describe('edit mode', () => {
   test('loadRequest paints the request as one run with its id', () => {
     const s = build();

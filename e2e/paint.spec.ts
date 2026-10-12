@@ -2,6 +2,8 @@ import { expect, test, type Page } from '@playwright/test';
 import { installQsFixtures, type QsFixtures } from './fixtures/qs';
 import { buildToken } from './fixtures/token';
 import previewSplit from '../tests/fixtures/qs/preview-split.json' with { type: 'json' };
+import createdFixture from '../tests/fixtures/qs/create.json' with { type: 'json' };
+import requestsFixture from '../tests/fixtures/qs/requests.json' with { type: 'json' };
 
 const connect = async (page: Page): Promise<QsFixtures> => {
   const qs = await installQsFixtures(page);
@@ -161,4 +163,112 @@ test('an unavailable preview offers a retry', async ({ page }) => {
   await retry.click();
   await expect(retry).toBeHidden();
   await expect(page.getByRole('button', { name: 'Submit 1' })).toBeEnabled();
+});
+
+const paintDay = async (page: Page, date: string) => {
+  await cell(page, date).click();
+  await expect(cell(page, date)).toHaveClass(/selected/);
+};
+
+test('three runs, the second fails: two are drawn, one stays with its error', async ({
+  page,
+}) => {
+  const qs = await connect(page);
+  qs.override('POST', /times\/v3\/requests$/, () => ({
+    status: 201,
+    body: createdFixture,
+  }));
+  let attempt = 0;
+  qs.override('POST', /times\/v3\/requests$/, () => {
+    attempt++;
+    if (attempt === 2) {
+      return { status: 400, body: { errors: [{ message: 'Chevauchement' }] } };
+    }
+    return { status: 201, body: createdFixture };
+  });
+  await page.keyboard.press('t');
+  await paintDay(page, '2026-11-02');
+  await paintDay(page, '2026-11-04');
+  await paintDay(page, '2026-11-06');
+  await expect(page.getByTestId('run-row')).toHaveCount(3);
+  const submit = page.getByRole('button', { name: 'Submit 3' });
+  await expect(submit).toBeEnabled();
+  qs.override('GET', /odata\/requests$/, () => ({
+    status: 200,
+    body: {
+      '@odata.count': 2,
+      value: [
+        ...requestsFixture.value,
+        {
+          ...createdFixture.result[0]!.result,
+          id: 181,
+          beginDate: '2026-11-02T00:00:00+01:00',
+          endDate: '2026-11-02T23:00:00+01:00',
+          segments: [
+            {
+              id: 501,
+              beginDate: '2026-11-02T00:00:00+01:00',
+              endDate: '2026-11-02T23:00:00+01:00',
+              duration: 1,
+              natureId: 75,
+            },
+          ],
+        },
+        {
+          ...createdFixture.result[0]!.result,
+          id: 182,
+          beginDate: '2026-11-06T00:00:00+01:00',
+          endDate: '2026-11-06T23:00:00+01:00',
+          segments: [
+            {
+              id: 502,
+              beginDate: '2026-11-06T00:00:00+01:00',
+              endDate: '2026-11-06T23:00:00+01:00',
+              duration: 1,
+              natureId: 75,
+            },
+          ],
+        },
+      ],
+    },
+  }));
+  await submit.click();
+  await expect(page.getByTestId('run-row')).toHaveCount(1);
+  await expect(page.getByTestId('run-row').first()).toContainText(
+    'Chevauchement',
+  );
+  await expect(page.getByRole('button', { name: 'Submit 1' })).toBeVisible();
+  await expect(cell(page, '2026-11-02')).toHaveClass(/pending/);
+  await expect(cell(page, '2026-11-02')).not.toHaveClass(/selected/);
+  await expect(cell(page, '2026-11-06')).toHaveClass(/pending/);
+  await expect(cell(page, '2026-11-04')).toHaveClass(/selected/);
+  const posts = qs
+    .callsTo(/times\/v3\/requests$/)
+    .filter((c) => c.method === 'POST');
+  expect(posts).toHaveLength(3);
+  expect(posts[0]!.query.workflowSequenceId).toBe('11281');
+  expect(posts[0]!.headers['prefer']).toBe('return=representation');
+  expect(posts[0]!.body).toMatchObject({
+    duration: 3,
+    employeeId: 9001,
+    segments: [{ entitlementId: null, duration: 3, natureId: 75, id: null }],
+    comment: null,
+  });
+});
+
+test('Enter submits every previewed run', async ({ page }) => {
+  const qs = await connect(page);
+  await page.keyboard.press('t');
+  await paintDay(page, '2026-11-02');
+  await paintDay(page, '2026-11-04');
+  await expect(page.getByRole('button', { name: 'Submit 2' })).toBeEnabled();
+  await page.keyboard.press('Enter');
+  await expect(page.getByTestId('run-row')).toHaveCount(0);
+  await expect
+    .poll(
+      () =>
+        qs.callsTo(/times\/v3\/requests$/).filter((c) => c.method === 'POST')
+          .length,
+    )
+    .toBe(2);
 });

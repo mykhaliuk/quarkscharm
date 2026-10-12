@@ -111,6 +111,17 @@ export const createSelection = ({ isSelectable }: Deps) => {
     }
   };
 
+  const removeRun = (run: Run) => {
+    for (const day of run.days) {
+      const slot = slotOf(day.date);
+      store(day.date, {
+        am: day.am ? null : slot.am,
+        pm: day.pm ? null : slot.pm,
+      });
+    }
+    if (paint.size === 0) editing.value = null;
+  };
+
   const runs = computed<KeyedRun[]>(() =>
     slotsToRuns(new Map(paint), isSelectable).map((run) => ({
       ...run,
@@ -129,6 +140,7 @@ export const createSelection = ({ isSelectable }: Deps) => {
     paintRange,
     clear,
     loadRequest,
+    removeRun,
   };
 };
 

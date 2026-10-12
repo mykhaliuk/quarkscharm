@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { CellPress } from '~/utils/calendar-events';
+import type { Preview } from '~/utils/qs/map';
 import type { YearPart } from '~/utils/year-store';
 import { isPending } from '~~/shared/utils/status';
 import { today } from '~~/shared/utils/ymd';
@@ -12,6 +13,7 @@ const { store, year } = useYear();
 const natures = useNatures();
 const selection = useSelection();
 const previews = usePreviews();
+const submit = useSubmit();
 
 const todayYmd = computed(() =>
   today(session.state.me?.timeZone ?? 'Europe/Paris'),
@@ -28,10 +30,32 @@ const failed = computed(() =>
   PARTS.filter((part) => store.state.status[part] === 'failed'),
 );
 const brushHighlighted = ref(false);
-const submitErrors = ref(new Map<string, string>());
 const canSubmit = computed(
-  () => selection.runs.value.length > 0 && previews.allReady.value,
+  () =>
+    selection.runs.value.length > 0 &&
+    previews.allReady.value &&
+    !submit.submitting.value,
 );
+
+const readyPreviews = () => {
+  const ready = new Map<string, Preview>();
+  for (const [key, entry] of previews.state) {
+    if (entry.preview !== null) ready.set(key, entry.preview);
+  }
+  return ready;
+};
+const submitAll = async () => {
+  if (!canSubmit.value) return;
+  await submit.submitAll(
+    selection.runs.value,
+    readyPreviews(),
+    selection.editing.value,
+  );
+};
+const clearAll = () => {
+  selection.clear();
+  submit.clearErrors();
+};
 
 const requestIdOf = (date: string): number | null => {
   const slot = store.slots.value.get(date);
@@ -93,10 +117,8 @@ useShortcuts({
   t: () => selectBrush(0),
   f: () => selectBrush(1),
   c: () => selectBrush(2),
-  Escape: () => {
-    selection.clear();
-    submitErrors.value = new Map();
-  },
+  Escape: clearAll,
+  Enter: () => void submitAll(),
 });
 
 onMounted(() => {
@@ -147,14 +169,15 @@ onBeforeUnmount(() => window.removeEventListener('mouseup', onRelease));
     <ReviewPanel
       :runs="selection.runs.value"
       :entries="previews.state"
-      :errors="submitErrors"
+      :errors="submit.errors"
       :can-submit="canSubmit"
-      :submitting="false"
+      :submitting="submit.submitting.value"
       :editing="selection.editing.value !== null"
       :label="natures.label"
       :color-token="natures.colorToken"
       @retry="previews.retry"
-      @clear="selection.clear"
+      @clear="clearAll"
+      @submit="submitAll"
     />
     <RequestCard
       v-if="card.request.value"
