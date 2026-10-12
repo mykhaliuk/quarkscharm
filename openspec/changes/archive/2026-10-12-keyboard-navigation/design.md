@@ -55,12 +55,14 @@ month's last day) live in `shared/utils/ymd.ts` next to `addDays`. The
 page maps keys to these functions; when the result is in another year,
 it calls the year store's `load(year)` and keeps the cursor.
 
-### D4. Undo is a snapshot stack in the selection store
+### D4. Undo and redo are snapshot stacks in the selection store
 Before every paint action the store pushes a copy of the paint map
 (`Map<ymd, Slot>`, at most a few hundred entries) and the editing id;
-the stack keeps 10 entries. A drag pushes once, at the press, not per
-crossed cell. `undo()` pops and restores. `loadRequest`, a year change
-and leaving change mode reset the stack.
+the stack keeps 10 entries. A drag paints once, at the release, so it
+pushes once. `undo()` pops, pushes the current state on a redo stack of
+10 and restores; `redo()` does the reverse. A new paint action empties
+the redo stack. `loadRequest`, a year change, submit success and leaving
+change mode empty both stacks.
 - Rejected: an inverse-operation log. Each action (toggle, replace,
   range over taken halves) would need its own inverse; snapshots are
   simpler and cheap at this size.

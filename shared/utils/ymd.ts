@@ -31,6 +31,19 @@ export const isYmd = (value: unknown): value is Ymd => {
 export const addDays = (ymd: Ymd, n: number): Ymd =>
   fromUtc(toUtc(ymd) + n * DAY_MS);
 
+export const moveMonth = (ymd: Ymd, n: number): Ymd => {
+  const [year, month, day] = ymd.split('-').map(Number) as [
+    number,
+    number,
+    number,
+  ];
+  const index = year * 12 + (month - 1) + n;
+  const targetYear = Math.floor(index / 12);
+  const targetMonth = index - targetYear * 12 + 1;
+  const last = new Date(Date.UTC(targetYear, targetMonth, 0)).getUTCDate();
+  return `${targetYear}-${pad(targetMonth)}-${pad(Math.min(day, last))}`;
+};
+
 export const daysBetween = (a: Ymd, b: Ymd): number =>
   Math.round((toUtc(b) - toUtc(a)) / DAY_MS);
 

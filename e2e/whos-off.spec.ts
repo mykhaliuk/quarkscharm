@@ -55,15 +55,13 @@ test('a click on a day without a brush focuses it, Today returns', async ({
   await expect(column.getByTestId('person')).toHaveCount(2);
 });
 
-test('Alt-click focuses a day even while a brush is active', async ({
-  page,
-}) => {
+test('a click with a brush paints the day and focuses it', async ({ page }) => {
   await page.clock.setFixedTime(new Date('2026-10-12T09:00:00+02:00'));
   await connect(page);
   await page.keyboard.press('t');
-  await page.locator('[data-date="2026-11-03"]').click({ modifiers: ['Alt'] });
-  await expect(page.getByTestId('whos-off')).toContainText('3 Nov 2026');
-  await expect(page.locator('[data-date="2026-11-03"]')).not.toHaveClass(
+  await page.locator('[data-date="2026-11-02"]').click();
+  await expect(page.getByTestId('whos-off')).toContainText('2 Nov 2026');
+  await expect(page.locator('[data-date="2026-11-02"]')).toHaveClass(
     /selected/,
   );
 });

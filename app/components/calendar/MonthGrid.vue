@@ -31,7 +31,10 @@ const props = defineProps<{
   today: string;
   pendingIds: Set<number>;
   focusedDate: string | null;
+  cursor: string;
+  range: { from: string; to: string } | null;
   colorToken: (natureId: number | null) => string;
+  label: (natureId: number | null) => string;
 }>();
 
 const emit = defineEmits<{
@@ -54,14 +57,19 @@ const isPending = (date: string): boolean => {
   return id !== null && props.pendingIds.has(id);
 };
 const isSelected = (date: string): boolean => props.selection.has(date);
+const isRanged = (date: string): boolean => {
+  if (props.range === null) return false;
+  const { from, to } = props.range;
+  return from <= to ? from <= date && date <= to : to <= date && date <= from;
+};
 </script>
 
 <template>
   <section class="month" :data-month="month">
     <h3 class="name month-text">{{ name }}</h3>
     <div class="grid">
-      <span v-for="(label, i) in WEEKDAYS" :key="i" class="wd">{{
-        label
+      <span v-for="(weekday, i) in WEEKDAYS" :key="i" class="wd">{{
+        weekday
       }}</span>
       <template v-for="(row, r) in grid" :key="r">
         <template v-for="(date, c) in row" :key="c">
@@ -75,7 +83,10 @@ const isSelected = (date: string): boolean => props.selection.has(date);
             :pending="isPending(date)"
             :selected="isSelected(date)"
             :focused="date === focusedDate"
+            :cursor="date === cursor"
+            :ranged="isRanged(date)"
             :color-token="colorToken"
+            :label="label"
             @enter="emit('enter', $event)"
             @leave="emit('leave', $event)"
             @press="emit('press', $event)"

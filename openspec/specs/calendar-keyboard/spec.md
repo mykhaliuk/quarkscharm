@@ -1,9 +1,10 @@
-## Purpose
+# calendar-keyboard Specification
 
+## Purpose
 Lets the user reach, paint, change and cancel any day of the year grid
 from the keyboard alone, with vim-like keys that work on any layout.
 
-## ADDED Requirements
+## Requirements
 
 ### Requirement: Cursor day
 The year grid SHALL show exactly one cursor day with an outline that
@@ -76,7 +77,7 @@ painting.
   one run
 
 ### Requirement: Actions on a request day
-When the cursor day belongs to an existing request, `E` SHALL start the
+When the cursor day belongs to an existing request, `e` SHALL start the
 change of that request as the card's "Change" does, `x` SHALL open the
 card with the cancel confirmation asked, and `Enter` SHALL open the card.
 On a day without a request these keys SHALL do nothing, except `Enter`,
@@ -84,7 +85,7 @@ which submits as before.
 
 #### Scenario: Change from the keyboard
 - **WHEN** the cursor is on 2026-10-22, a day of a two-day request, and
-  the user presses `E`
+  the user presses `e`
 - **THEN** change mode starts for that request
 
 #### Scenario: Cancel from the keyboard
@@ -92,12 +93,14 @@ which submits as before.
   presses `x`
 - **THEN** the card shows "Cancel <nature> <dates>? Yes / No"
 
-### Requirement: Undo
+### Requirement: Undo and redo
 `u` SHALL undo the last paint action in the selection: a click, a drag, a
 key paint, a range paint, a removal of a run or a clear. The system SHALL
 keep the last 10 actions; older ones are dropped. Undo SHALL NOT affect
-requests that were submitted, changed or cancelled. Leaving change mode
-or switching the year SHALL empty the history.
+requests that were submitted, changed or cancelled. `U` SHALL redo the
+last action that `u` took back, up to 10 steps; a new paint action SHALL
+drop the steps left to redo. Leaving change mode or switching the year
+SHALL empty the history.
 
 #### Scenario: Undo a paint
 - **WHEN** the user paints 2026-11-02 and then presses `u`
@@ -107,6 +110,10 @@ or switching the year SHALL empty the history.
 - **WHEN** the user makes 12 paint actions and presses `u` 12 times
 - **THEN** the first two actions stay painted
 
+#### Scenario: Redo
+- **WHEN** the user paints 2026-11-02, presses `u` and then `U`
+- **THEN** 2026-11-02 is painted again and the review panel lists it
+
 ### Requirement: Shortcut sheet
 `?` SHALL open a sheet that lists every shortcut with its action;
 `Escape` or `?` SHALL close it. While the sheet or the token prompt is
@@ -115,7 +122,7 @@ open, no other shortcut SHALL act.
 #### Scenario: Open the sheet
 - **WHEN** the user presses `?`
 - **THEN** a sheet lists the motions, the paint keys, the request keys,
-  undo and the year keys
+  undo, redo and the year keys
 
 ### Requirement: Layout-independent keys
 Every shortcut SHALL be bound to the physical key, so it acts the same

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount } from 'vue';
+import { computed, nextTick, onBeforeUnmount, ref } from 'vue';
 import { createConfirmTimer } from '~/utils/confirm-timer';
 import { formatDayRange, formatDays } from '~/utils/format';
 import type { AbsenceRequest } from '~/utils/qs/map';
@@ -37,6 +37,15 @@ const style = computed(() => ({
   left: `${props.anchor.left}px`,
 }));
 const accept = () => confirm.accept(async () => emit('cancel', props.request));
+
+const noButton = ref<HTMLButtonElement | null>(null);
+const askCancel = async () => {
+  if (props.request.cancelSequenceId === null) return;
+  confirm.ask();
+  await nextTick();
+  noButton.value?.focus();
+};
+defineExpose({ askCancel });
 </script>
 
 <template>
@@ -67,7 +76,12 @@ const accept = () => confirm.accept(async () => emit('cancel', props.request));
       <button type="button" class="btn danger label" @click="accept">
         Yes
       </button>
-      <button type="button" class="btn label" @click="confirm.decline">
+      <button
+        ref="noButton"
+        type="button"
+        class="btn label"
+        @click="confirm.decline"
+      >
         No
       </button>
     </div>

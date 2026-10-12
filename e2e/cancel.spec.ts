@@ -90,3 +90,19 @@ test('a confirmation does not carry over to another request', async ({
   await expect(card).toBeVisible();
   await expect(card.getByRole('button', { name: 'Yes' })).toHaveCount(0);
 });
+
+test('x on a request day opens the card with the cancel question', async ({
+  page,
+}) => {
+  const qs = await connect(page);
+  await cell(page, '2026-10-23').click();
+  await page.keyboard.press('Escape');
+  await expect(page.getByTestId('request-card')).toBeHidden();
+  await page.keyboard.press('x');
+  const card = page.getByTestId('request-card');
+  await expect(card).toContainText('Cancel Télétravail 22–23 Oct 2026?');
+  await expect(card.getByRole('button', { name: 'No' })).toBeFocused();
+  await page.keyboard.press('Enter');
+  await expect(card.getByRole('button', { name: 'Cancel' })).toBeVisible();
+  expect(qs.callsTo(/workflows\/\d+$/)).toHaveLength(0);
+});

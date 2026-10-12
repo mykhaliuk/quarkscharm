@@ -13,7 +13,10 @@ const props = defineProps<{
   today: string;
   pendingIds: Set<number>;
   focusedDate: string | null;
+  cursor: string;
+  range: { from: string; to: string } | null;
   colorToken: (natureId: number | null) => string;
+  label: (natureId: number | null) => string;
 }>();
 
 const emit = defineEmits<{
@@ -39,7 +42,10 @@ const grids = computed(() => yearMonths(props.year));
       :today="today"
       :pending-ids="pendingIds"
       :focused-date="focusedDate"
+      :cursor="cursor"
+      :range="range"
       :color-token="colorToken"
+      :label="label"
       @enter="emit('enter', $event)"
       @leave="emit('leave', $event)"
       @press="emit('press', $event)"

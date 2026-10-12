@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { CellPress } from '~/utils/calendar-events';
 import type { AbsenceRequest, Preview } from '~/utils/qs/map';
+import type { PaintResult } from '~/utils/selection-store';
 import type { YearPart } from '~/utils/year-store';
 import { withoutRequest } from '~~/shared/utils/slots';
 import { isPending } from '~~/shared/utils/status';
@@ -10,13 +11,14 @@ const PARTS: YearPart[] = ['requests', 'planner', 'holidays'];
 const HIGHLIGHT_MS = 1200;
 
 const session = useSession();
-const { store, year } = useYear();
+const { store, year, previous, next } = useYear();
 const natures = useNatures();
 const selection = useSelection();
 const previews = usePreviews();
 const submit = useSubmit();
 const { cancel } = useCancel();
 const whosOff = useWhosOff();
+const cursor = useCursor();
 
 const todayYmd = computed(() =>
   today(session.state.me?.timeZone ?? 'Europe/Paris'),
@@ -96,17 +98,12 @@ let drag: {
 
 const onPress = (press: CellPress) => {
   if (press.event.button !== 0) return;
-  if (press.event.altKey) {
-    press.event.preventDefault();
-    void whosOff.focus(press.date);
-    return;
-  }
+  cursor.moveTo(press.date);
   if (requestIdOf(press.date) !== null && selection.editing.value === null) {
     card.pin(press.date);
     return;
   }
   if (selection.brush.value === null) {
-    void whosOff.focus(press.date);
     askForBrush();
     return;
   }
@@ -173,12 +170,79 @@ const confirmCancel = async (request: AbsenceRequest) => {
   else cancelError.value = message;
 };
 
+const cardRef = ref<{ askCancel: () => void } | null>(null);
+const requestAtCursor = (): AbsenceRequest | null => {
+  if (selection.editing.value !== null) return null;
+  const id = requestIdOf(cursor.cursor.value);
+  return id === null
+    ? null
+    : (store.state.requests.find((r) => r.id === id) ?? null);
+};
+const changeAtCursor = () => {
+  const request = requestAtCursor();
+  if (request !== null) startChange(request);
+};
+const cancelAtCursor = async () => {
+  if (requestAtCursor() === null) return;
+  card.open(cursor.cursor.value);
+  await nextTick();
+  cardRef.value?.askCancel();
+};
+const enter = () => {
+  if (requestAtCursor() === null) void submitAll();
+  else card.open(cursor.cursor.value);
+};
+
+const anchor = ref<string | null>(null);
+const range = computed(() =>
+  anchor.value === null
+    ? null
+    : { from: anchor.value, to: cursor.cursor.value },
+);
+watch(year, () => {
+  anchor.value = null;
+});
+const toggleRange = () => {
+  anchor.value = anchor.value === null ? cursor.cursor.value : null;
+};
+
+const paintAtCursor = (paint: (ymd: string) => PaintResult) => {
+  card.hide();
+  if (paint(cursor.cursor.value) === 'no-brush') askForBrush();
+};
+const space = () => {
+  if (anchor.value === null) {
+    paintAtCursor(selection.paintDay);
+    return;
+  }
+  const from = anchor.value;
+  paintAtCursor((to) => selection.paintRange(from, to));
+  if (selection.brush.value !== null) anchor.value = null;
+};
+
+const showCursor = async () => {
+  await nextTick();
+  document
+    .querySelector(`[data-date="${cursor.cursor.value}"]`)
+    ?.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+};
+const motion = (move: () => void) => () => {
+  move();
+  void showCursor();
+};
+const byDays = (n: number) => motion(() => cursor.byDays(n));
+const byMonths = (n: number) => motion(() => cursor.byMonths(n));
+
 const selectBrush = (index: number) => {
   const id = natures.brushes.value[index];
   if (id !== undefined)
     selection.setBrush(selection.brush.value === id ? null : id);
 };
 const escape = () => {
+  if (anchor.value !== null) {
+    anchor.value = null;
+    return;
+  }
   const idle =
     selection.runs.value.length === 0 && selection.editing.value === null;
   if (idle) selection.setBrush(null);
@@ -186,11 +250,35 @@ const escape = () => {
 };
 
 useShortcuts({
-  t: () => selectBrush(0),
-  f: () => selectBrush(1),
-  c: () => selectBrush(2),
+  KeyT: () => selectBrush(0),
+  KeyF: () => selectBrush(1),
+  KeyC: () => selectBrush(2),
   Escape: escape,
-  Enter: () => void submitAll(),
+  Enter: enter,
+  NumpadEnter: enter,
+  KeyH: byDays(-1),
+  KeyL: byDays(1),
+  KeyK: byDays(-7),
+  KeyJ: byDays(7),
+  ArrowLeft: byDays(-1),
+  ArrowRight: byDays(1),
+  ArrowUp: byDays(-7),
+  ArrowDown: byDays(7),
+  'Shift+KeyH': byMonths(-1),
+  'Shift+KeyL': byMonths(1),
+  'Shift+KeyK': byMonths(-4),
+  'Shift+KeyJ': byMonths(4),
+  Period: motion(cursor.today),
+  BracketLeft: motion(previous),
+  BracketRight: motion(next),
+  Space: space,
+  KeyA: () => paintAtCursor((ymd) => selection.paintHalf(ymd, 'am')),
+  KeyP: () => paintAtCursor((ymd) => selection.paintHalf(ymd, 'pm')),
+  KeyV: toggleRange,
+  KeyE: changeAtCursor,
+  KeyX: () => void cancelAtCursor(),
+  KeyU: selection.undo,
+  'Shift+KeyU': selection.redo,
 });
 
 onMounted(() => {
@@ -254,7 +342,10 @@ onBeforeUnmount(() => window.removeEventListener('mouseup', onRelease));
         :today="todayYmd"
         :pending-ids="pendingIds"
         :focused-date="card.date.value"
+        :cursor="cursor.cursor.value"
+        :range="range"
         :color-token="natures.colorToken"
+        :label="natures.label"
         @enter="onEnter"
         @leave="onLeave"
         @press="onPress"
@@ -283,6 +374,7 @@ onBeforeUnmount(() => window.removeEventListener('mouseup', onRelease));
     />
     <RequestCard
       v-if="card.request.value"
+      ref="cardRef"
       :key="card.request.value.id"
       :request="card.request.value"
       :error="cancelError"
@@ -293,6 +385,7 @@ onBeforeUnmount(() => window.removeEventListener('mouseup', onRelease));
       @change="startChange"
       @cancel="confirmCancel"
     />
+    <ShortcutSheet />
   </main>
 </template>
 

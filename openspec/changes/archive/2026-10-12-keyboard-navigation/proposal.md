@@ -18,12 +18,13 @@ character, not the physical key.
 - **BREAKING**: the left and right arrow keys no longer switch the year;
   `[` and `]` do.
 - Actions on the cursor day: `Space` paints or unpaints the day with the
-  active brush, `a` / `p` paint only the morning / afternoon, `E`
+  active brush, `a` / `p` paint only the morning / afternoon, `e`
   changes the request under the cursor, `x` asks to cancel it (the same
   Yes / No confirmation), `Enter` on a request day opens its card.
 - `v` starts a range from the cursor; `Space` paints the whole range;
   `Escape` leaves the range.
-- `u` undoes the last paint action in the selection, up to 10 steps.
+- `u` undoes the last paint action in the selection, up to 10 steps;
+  `U` redoes what `u` took back.
 - `?` shows a sheet with every shortcut.
 - Every shortcut reads the physical key (`event.code`), so it works on
   any keyboard layout; this also fixes `T`, `F`, `C` on a Russian
@@ -35,8 +36,8 @@ character, not the physical key.
 
 - `gg` / `G` and other jumps to the year edges.
 - `Shift+A` / `Shift+P`: left free.
-- Undo of submitted, changed or cancelled requests: undo covers the
-  unsent selection only.
+- Undo or redo of submitted, changed or cancelled requests: both cover
+  the unsent selection only.
 - Remappable keys, count prefixes (`3j`) and a command line (`:`).
 - Screen-reader grid semantics beyond the cursor's accessible name.
 
@@ -44,7 +45,7 @@ character, not the physical key.
 
 ### New Capabilities
 - `calendar-keyboard`: the cursor day, the motions, the actions on the
-  cursor, the range mode, undo, the shortcut sheet and the
+  cursor, the range mode, undo and redo, the shortcut sheet and the
   layout-independent key reading.
 
 ### Modified Capabilities

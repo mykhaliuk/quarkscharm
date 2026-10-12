@@ -48,6 +48,14 @@ export const useRequestCard = (
 
   const date = ref<string | null>(null);
 
+  const open = (ymd: string) => {
+    if (requestIdOf(ymd) === null) return;
+    clearTimer();
+    show(ymd);
+    date.value = ymd;
+    pinned.value = true;
+  };
+
   const pin = (ymd: string) => {
     if (requestIdOf(ymd) === null) return;
     if (pinned.value && date.value === ymd) {
@@ -80,5 +88,5 @@ export const useRequestCard = (
     clearTimer();
   });
 
-  return { request, anchor, pinned, date, pin, hide };
+  return { request, anchor, pinned, date, open, pin, hide };
 };

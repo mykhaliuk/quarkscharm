@@ -285,6 +285,25 @@ test('Enter submits every previewed run', async ({ page }) => {
     .toBe(2);
 });
 
+test('Enter on a request day opens its card and submits nothing', async ({
+  page,
+}) => {
+  const qs = await connect(page);
+  await page.keyboard.press('t');
+  await paintDay(page, '2026-11-02');
+  await expect(page.getByRole('button', { name: 'Submit 1' })).toBeEnabled();
+  for (const key of ['k', 'k', 'l', 'l', 'l']) await page.keyboard.press(key);
+  await expect(cell(page, '2026-10-22')).toHaveClass(/cursor/);
+  await page.keyboard.press('Enter');
+  const card = page.getByTestId('request-card');
+  await expect(card).toBeVisible();
+  await expect(card).toContainText('Télétravail');
+  await expect(page.getByTestId('run-row')).toHaveCount(1);
+  expect(
+    qs.callsTo(/times\/v3\/requests$/).filter((c) => c.method === 'POST'),
+  ).toHaveLength(0);
+});
+
 test('painting two CP days shows the projected balance in the counter', async ({
   page,
 }) => {

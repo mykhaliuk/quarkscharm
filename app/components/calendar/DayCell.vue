@@ -2,6 +2,7 @@
 import { computed } from 'vue';
 import type { Slot } from '~~/shared/utils/slots';
 import type { CellPress } from '~/utils/calendar-events';
+import { formatDay } from '~/utils/format';
 
 const props = defineProps<{
   date: string;
@@ -12,7 +13,10 @@ const props = defineProps<{
   pending: boolean;
   selected: boolean;
   focused?: boolean;
+  cursor?: boolean;
+  ranged?: boolean;
   colorToken: (natureId: number | null) => string;
+  label?: (natureId: number | null) => string;
 }>();
 
 const emit = defineEmits<{
@@ -38,6 +42,19 @@ const numberColor = computed(() => {
   const token = props.colorToken(paint.natureId).slice(2);
   return `--cell-on: var(--on-${token}, var(--on-nature))`;
 });
+const status = computed(() => {
+  if (requestId.value !== null) return props.pending ? 'pending' : 'validated';
+  return props.selected ? 'selected' : null;
+});
+const accessibleName = computed(() => {
+  const natures = new Set<string>();
+  for (const paint of [props.slot.am, props.slot.pm]) {
+    if (paint !== null && props.label) natures.add(props.label(paint.natureId));
+  }
+  return [formatDay(props.date), props.holiday, ...natures, status.value]
+    .filter((part) => part !== null)
+    .join(', ');
+});
 const classes = computed(() => ({
   muted: props.muted,
   holiday: props.holiday !== null,
@@ -45,6 +62,8 @@ const classes = computed(() => ({
   pending: props.pending,
   selected: props.selected,
   focused: props.focused === true,
+  cursor: props.cursor === true,
+  ranged: props.ranged === true,
   full: full.value,
   painted: props.slot.am !== null || props.slot.pm !== null,
 }));
@@ -55,7 +74,7 @@ const classes = computed(() => ({
     class="cell"
     :class="classes"
     :style="numberColor"
-    :aria-label="holiday ?? undefined"
+    :aria-label="accessibleName"
     :data-date="date"
     :data-selectable="String(!muted)"
     :data-request-id="requestId ?? undefined"
@@ -166,7 +185,13 @@ const classes = computed(() => ({
   box-shadow: 0 0 0 1px var(--ink-2);
 }
 
-.selected::after {
+.cursor {
+  z-index: 2;
+  box-shadow: 0 0 0 2px var(--cell-cursor);
+}
+
+.selected::after,
+.ranged::after {
   content: '';
   position: absolute;
   inset: 0;

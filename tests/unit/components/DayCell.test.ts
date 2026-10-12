@@ -57,7 +57,9 @@ describe('DayCell', () => {
     expect(wrapper.classes()).toEqual(
       expect.arrayContaining(['muted', 'holiday']),
     );
-    expect(wrapper.attributes('aria-label')).toBe('Armistice 1918');
+    expect(wrapper.attributes('aria-label')).toBe(
+      '11 Nov 2026, Armistice 1918',
+    );
     expect(wrapper.attributes('data-selectable')).toBe('false');
   });
 
@@ -78,5 +80,43 @@ describe('DayCell', () => {
       expect.arrayContaining(['today', 'pending', 'selected', 'full']),
     );
     expect(wrapper.attributes('data-request-id')).toBe('155');
+  });
+
+  test('the cursor day carries the cursor class and its date, nature and status', () => {
+    const wrapper = mount(DayCell, {
+      props: {
+        ...base,
+        date: '2026-10-22',
+        slot: {
+          am: { natureId: 75, requestId: 155 },
+          pm: { natureId: 75, requestId: 155 },
+        },
+        pending: true,
+        cursor: true,
+        label: (natureId: number | null) =>
+          natureId === 75 ? 'Télétravail' : '?',
+      },
+    });
+    expect(wrapper.classes()).toContain('cursor');
+    expect(wrapper.attributes('aria-label')).toBe(
+      '22 Oct 2026, Télétravail, pending',
+    );
+  });
+
+  test('a free day is named by its date only, a painted one is selected', () => {
+    const free = mount(DayCell, { props: base });
+    expect(free.classes()).not.toContain('cursor');
+    expect(free.attributes('aria-label')).toBe('14 Oct 2026');
+    const painted = mount(DayCell, {
+      props: {
+        ...base,
+        slot: { am: { natureId: 17, requestId: null }, pm: null },
+        selected: true,
+        label: () => 'Fulll Off',
+      },
+    });
+    expect(painted.attributes('aria-label')).toBe(
+      '14 Oct 2026, Fulll Off, selected',
+    );
   });
 });

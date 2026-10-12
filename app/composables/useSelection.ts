@@ -10,7 +10,7 @@ export const useSelection = (): SelectionStore => {
       occupant: (ymd, half) =>
         yearStore.slots.value.get(ymd)?.[half]?.requestId ?? null,
     });
-    watch(year, () => created.clear());
+    watch(year, () => created.reset());
     store = created;
   }
   return store;
