@@ -74,4 +74,21 @@ describe('resolveUpstream rejects', () => {
     expect(rejected('times/v3/')).toBe('path');
     expect(rejected('org/organization/')).toBe('path');
   });
+
+  test('encoded dots, backslashes and encoded slashes the URL parser would normalise', () => {
+    expect(rejected('times/v3/%2e%2e/people/x')).toBe('path');
+    expect(rejected('times/v3/%2E%2E/people/x')).toBe('path');
+    expect(rejected('times/v3/..\\people/x')).toBe('path');
+    expect(rejected('times/v3/x%2F..%2F..%2Fpeople')).toBe('path');
+    expect(rejected('times/v3/.%2e/people')).toBe('path');
+    expect(rejected('org/organization/users/me%3Fx=1')).toBe('path');
+    expect(rejected('org/organization/users/me@evil.example.com')).toBe('path');
+  });
+
+  test('the resolved URL keeps the allowed host and prefix', () => {
+    const result = resolveUpstream('org/organization/users/me', 'fulll');
+    if ('error' in result) throw new Error('rejected');
+    expect(result.url.host).toBe('service-fulll.quarksup.net');
+    expect(result.url.pathname.startsWith('/api/v2/organization/')).toBe(true);
+  });
 });

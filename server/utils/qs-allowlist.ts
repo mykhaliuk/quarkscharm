@@ -34,15 +34,14 @@ const ROWS: readonly Row[] = [
   },
 ];
 
+const SEGMENT_RE = /^[A-Za-z0-9_~-]+(?:\.[A-Za-z0-9_~-]+)*$/;
+
 const isCleanPath = (remainder: string): boolean => {
   if (remainder.length === 0) return false;
-  if (remainder.startsWith('/')) return false;
-  if (
-    remainder.split('/').some((segment) => segment === '..' || segment === '.')
-  ) {
-    return false;
-  }
-  return true;
+  const segments = remainder.endsWith('/')
+    ? remainder.slice(0, -1).split('/')
+    : remainder.split('/');
+  return segments.every((segment) => SEGMENT_RE.test(segment));
 };
 
 export const resolveUpstream = (
@@ -63,5 +62,8 @@ export const resolveUpstream = (
     if (!scope || remainder.length === scope.length) return { error: 'path' };
   }
   const host = row.host.replace('<tenant>', tenant);
-  return { url: new URL(`https://${host}${row.upstreamPrefix}${remainder}`) };
+  const url = new URL(`https://${host}${row.upstreamPrefix}${remainder}`);
+  const inScope =
+    url.host === host && url.pathname.startsWith(row.upstreamPrefix);
+  return inScope ? { url } : { error: 'path' };
 };
