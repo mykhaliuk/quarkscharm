@@ -1,0 +1,50 @@
+schema: spec-driven
+
+context: |
+  quarksCharm — "the charm flavour of quarksUp": a desktop web helper for
+  absences (congés, télétravail) on top of the quarksUp Times API. Public
+  repo, used by the author and colleagues, each with their own token.
+
+  Stack: Nuxt 4 (Vue 3), Nitro server routes as a stateless CORS proxy,
+  Vercel (main deploys straight to prod, no staging), bun as package manager
+  and CI runner, oxlint + oxfmt, Playwright. Node >= 24. No database: the
+  user pastes a quarksUp bearer token (1 h JWT); token, tenant and UI
+  preferences live in the browser only; quarksUp data stays in memory.
+
+  Mandatory rulebook: .claude/rules/*.md (no TS enums, no DTO layer, plain
+  objects and stable shapes, English-only in-source artifacts, Conventional
+  Commits, comments only when load-bearing).
+
+  quarksUp API facts (captured 2026-10-12, see docs/quarksup-api.md): Times
+  API https://api.quarksup.net/times/v3, organization API
+  https://service-<tenant>.quarksup.net/api/v2, ADFS bearer JWT, OpenAPI at
+  /docs/openapi/times/*.json. Never hard-code tenant, employee id, nature
+  ids or workflow sequence ids: all come from the API at runtime. Never
+  commit captured responses (they carry colleagues' personal data).
+
+  Design system: own identity, zero overlap with other projects. Authored in
+  Claude Design, exported manifest is the source of truth, production CSS is
+  tokens only (var()), checked by `bun run ds:check`.
+
+  Branches: feat/<desc>, fix/<desc> off main, PR into main. Every feat/fix
+  commit carries a `Change: <change-name>` trailer naming its folder under
+  openspec/changes/.
+
+rules:
+  proposal:
+    - Always include a "Non-goals" section
+    - Name the user-facing outcome first, the mechanism second
+  design:
+    - A hard-to-reverse or surprising decision gets its own "Decisions"
+      entry with the rejected alternative
+    - Reference docs/quarksup-api.md for endpoint shapes instead of restating
+  tasks:
+    - Each task names the check that proves it (unit test, e2e, ds:check)
+    - A UI task includes its Playwright spec
+
+operations:
+  apply:
+    guidance:
+      - Run the same checks CI runs before declaring a task done (lint,
+        fmt:check, typecheck, test:unit, ds:check, e2e) — never a subset
+      - Archive inside the feature PR; specs/ advances with the merge

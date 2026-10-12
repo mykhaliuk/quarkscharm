@@ -6,3 +6,10 @@ node_modules
 !.env.example
 .DS_Store
 tmp
+
+# OpenSpec commands and skills are generated but committed; the global
+# gitignore hides .claude/ so the folder is re-included here on purpose.
+!.claude/
+.claude/*
+!.claude/commands/
+!.claude/skills/
