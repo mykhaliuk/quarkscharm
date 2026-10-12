@@ -142,6 +142,10 @@ const accept = () => confirm.accept(async () => emit('cancel', props.request));
   flex-wrap: wrap;
 }
 
+.confirm .caption {
+  flex-basis: 100%;
+}
+
 .btn {
   white-space: nowrap;
   padding: 4px var(--space-3);

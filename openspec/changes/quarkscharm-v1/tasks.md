@@ -104,5 +104,5 @@
 ## 12. Ship
 
 - [x] 12.1 `README.md`: what it is, the production URL, how to get a token, privacy statement (token in this browser only, nothing stored server-side), development commands, link to `docs/quarksup-api.md`. Check: a colleague can connect from the README alone.
-- [ ] 12.2 Run the full gate on `main`: `bun run check`, `bun run build`, `bun run test:e2e`; confirm the production deployment serves the build; smoke the real tenant by hand: connect, paint one TT day, preview, submit, change, cancel with confirmation. Check: all green and the manual run recorded in the PR or commit body.
-- [ ] 12.3 `openspec archive quarkscharm-v1` so `openspec/specs/` holds the six capabilities; `bun run spec:check` green. Check: `openspec list` shows no active change.
+- [x] 12.2 Run the full gate on `main`: `bun run check`, `bun run build`, `bun run test:e2e`; confirm the production deployment serves the build; smoke the real tenant by hand: connect, paint one TT day, preview, submit, change, cancel with confirmation. Check: all green and the manual run recorded in the PR or commit body.
+- [x] 12.3 `openspec archive quarkscharm-v1` so `openspec/specs/` holds the six capabilities; `bun run spec:check` green. Check: `openspec list` shows no active change.
