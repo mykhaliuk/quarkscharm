@@ -1,10 +1,17 @@
 node_modules
 .nuxt
+.nitro
 .output
+.data
+.cache
+dist
+logs
+*.log
 .vercel
 .env*
 !.env.example
 .DS_Store
+.idea
 tmp
 
 # OpenSpec commands and skills are generated but committed; the global
