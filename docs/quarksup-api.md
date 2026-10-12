@@ -311,4 +311,4 @@ calendar year.
    one token.
 4. People API spec: fetch any `people/v3` response and read its `link` header
    for the openapi URL, if avatars/directory beyond the planner are needed.
-3. (closed) Cancel and update captured live, see §6b/§6c.
+5. (closed) Cancel and update captured live, see §6b/§6c.
