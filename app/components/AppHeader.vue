@@ -17,8 +17,6 @@ const until = computed(() =>
     : formatTime(session.state.expiresAt, me.value?.timeZone ?? 'Europe/Paris'),
 );
 
-useShortcuts({ ArrowLeft: previous, ArrowRight: next });
-
 const forget = () => {
   session.forget();
   window.location.assign('/connect');

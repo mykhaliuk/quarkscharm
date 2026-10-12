@@ -212,3 +212,127 @@ describe('days of existing requests', () => {
     expect(selection.paint.get('2026-10-14')?.pm).toBeNull();
   });
 });
+
+describe('undo', () => {
+  const EDIT = {
+    id: 155,
+    natureId: 75,
+    beginDate: '2026-10-22',
+    beginHour: 0,
+    endDate: '2026-10-23',
+    endHour: 23,
+  };
+
+  test('undo takes back a paint', () => {
+    const s = build();
+    s.setBrush(75);
+    s.paintDay('2026-11-02');
+    s.undo();
+    expect(s.paint.size).toBe(0);
+    expect(s.runs.value).toEqual([]);
+  });
+
+  test('a range paint, as at the end of a drag, is one step', () => {
+    const s = build();
+    s.setBrush(75);
+    s.paintDay('2026-10-12');
+    s.paintRange('2026-10-13', '2026-10-16');
+    expect(s.paint.size).toBe(5);
+    s.undo();
+    expect([...s.paint.keys()]).toEqual(['2026-10-12']);
+  });
+
+  test('a removal of a run and a clear can be undone', () => {
+    const s = build();
+    s.setBrush(75);
+    s.paintRange('2026-10-12', '2026-10-13');
+    s.removeRun(s.runs.value[0]!);
+    s.undo();
+    expect(s.paint.size).toBe(2);
+    s.clear();
+    s.undo();
+    expect(s.paint.size).toBe(2);
+  });
+
+  test('a paint refused for no brush or a weekend is not a step', () => {
+    const s = build();
+    s.paintDay('2026-10-12');
+    s.setBrush(75);
+    s.paintDay('2026-10-12');
+    s.paintDay('2026-10-17');
+    s.undo();
+    expect(s.paint.size).toBe(0);
+  });
+
+  test('the history keeps the last 10 actions', () => {
+    const s = build();
+    s.setBrush(75);
+    const days = [12, 13, 14, 15, 16, 19, 20, 21, 22, 23, 26, 27];
+    for (const day of days) s.paintDay(`2026-10-${day}`);
+    for (let i = 0; i < 12; i++) s.undo();
+    expect([...s.paint.keys()]).toEqual(['2026-10-12', '2026-10-13']);
+  });
+
+  test('reset, as on a year change, empties the history', () => {
+    const s = build();
+    s.setBrush(75);
+    s.paintDay('2026-10-12');
+    s.reset();
+    s.undo();
+    expect(s.paint.size).toBe(0);
+  });
+
+  test('loading a request and leaving change mode empty the history', () => {
+    const s = build();
+    s.setBrush(75);
+    s.paintDay('2026-11-02');
+    s.loadRequest(EDIT);
+    s.undo();
+    expect(s.editing.value).toBe(155);
+    expect(s.paint.size).toBe(2);
+    s.paintDay('2026-10-23');
+    s.clear();
+    s.undo();
+    expect(s.editing.value).toBeNull();
+    expect(s.paint.size).toBe(0);
+  });
+
+  test('undo in change mode restores the request days', () => {
+    const s = build();
+    s.loadRequest(EDIT);
+    s.paintDay('2026-10-23');
+    expect(s.paint.has('2026-10-23')).toBe(false);
+    s.undo();
+    expect(s.paint.has('2026-10-23')).toBe(true);
+    expect(s.editing.value).toBe(155);
+  });
+});
+
+describe('redo', () => {
+  test('redo puts back what undo took, a new paint drops the redo steps', () => {
+    const s = build();
+    s.setBrush(75);
+    s.paintDay('2026-10-12');
+    s.paintDay('2026-10-13');
+    s.undo();
+    s.undo();
+    s.redo();
+    expect([...s.paint.keys()]).toEqual(['2026-10-12']);
+    s.redo();
+    expect([...s.paint.keys()]).toEqual(['2026-10-12', '2026-10-13']);
+    s.undo();
+    s.paintDay('2026-10-14');
+    s.redo();
+    expect([...s.paint.keys()]).toEqual(['2026-10-12', '2026-10-14']);
+  });
+
+  test('reset empties the redo steps too', () => {
+    const s = build();
+    s.setBrush(75);
+    s.paintDay('2026-10-12');
+    s.undo();
+    s.reset();
+    s.redo();
+    expect(s.paint.size).toBe(0);
+  });
+});

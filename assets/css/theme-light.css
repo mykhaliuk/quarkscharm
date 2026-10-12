@@ -35,6 +35,7 @@
   --cell-today: var(--accent);
   --cell-pending: var(--surface);
   --cell-selected: var(--accent);
+  --cell-cursor: var(--ink);
   --scrim: #1b222cb3;
   --shadow-card: 0 1px 2px #1b222c14, 0 4px 12px #1b222c14;
   --shadow-pop: 0 8px 24px #1b222c29;

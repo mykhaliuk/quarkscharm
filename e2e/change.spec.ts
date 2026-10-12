@@ -95,3 +95,24 @@ test('Escape leaves edit mode and restores the grid', async ({ page }) => {
   await expect(cell(page, '2026-10-22')).not.toHaveClass(/selected/);
   await expect(cell(page, '2026-10-22')).toHaveClass(/full/);
 });
+
+test('e on a request day starts its change', async ({ page }) => {
+  await connect(page);
+  await cell(page, '2026-10-22').click();
+  await page.keyboard.press('Escape');
+  await expect(page.getByTestId('request-card')).toBeHidden();
+  await expect(cell(page, '2026-10-22')).toHaveClass(/cursor/);
+  await page.keyboard.press('e');
+  await expect(page.getByTestId('review-panel')).toContainText(
+    'Change request',
+  );
+  await expect(cell(page, '2026-10-22')).toHaveClass(/selected/);
+  await expect(cell(page, '2026-10-23')).toHaveClass(/selected/);
+});
+
+test('e on a day without a request does nothing', async ({ page }) => {
+  await connect(page);
+  await cell(page, '2026-11-02').click();
+  await page.keyboard.press('e');
+  await expect(page.getByTestId('editing-banner')).toHaveCount(0);
+});

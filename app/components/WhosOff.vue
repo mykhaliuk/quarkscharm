@@ -2,6 +2,7 @@
 import { formatDay } from '~/utils/format';
 
 const whosOff = useWhosOff();
+const cursor = useCursor();
 
 const initials = (name: string) =>
   name
@@ -15,7 +16,7 @@ const initials = (name: string) =>
   <aside class="column" data-testid="whos-off">
     <h2 class="title">
       Who is off
-      <button type="button" class="btn label" @click="whosOff.today">
+      <button type="button" class="btn label" @click="cursor.today">
         Today
       </button>
     </h2>

@@ -84,9 +84,9 @@ test('a request without a cancel workflow shows no cancel control', async ({
   await expect(card.getByRole('button', { name: 'Cancel' })).toHaveCount(0);
 });
 
-test('arrow keys change the year and refetch', async ({ page }) => {
+test('] and [ change the year and refetch', async ({ page }) => {
   const qs = await connect(page);
-  await page.keyboard.press('ArrowRight');
+  await page.keyboard.press(']');
   await expect(page.getByTestId('year')).toHaveText('2027');
   await expect(page.locator('[data-year="2027"]')).toBeVisible();
   await expect
@@ -98,7 +98,7 @@ test('arrow keys change the year and refetch', async ({ page }) => {
   await expect(
     page.locator('[data-date="2027-01-02"] [data-half="am"]'),
   ).toHaveAttribute('style', /--nature-cp/);
-  await page.keyboard.press('ArrowLeft');
+  await page.keyboard.press('[');
   await expect(page.getByTestId('year')).toHaveText('2026');
 });
 

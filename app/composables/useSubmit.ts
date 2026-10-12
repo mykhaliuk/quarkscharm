@@ -36,6 +36,7 @@ export const useSubmit = (): SubmitStore => {
       if (run) selection.removeRun(run);
     },
     afterChange: async () => {
+      selection.forget();
       await Promise.all([yearStore.reload(), ...afterChangeHooks()]);
     },
   });

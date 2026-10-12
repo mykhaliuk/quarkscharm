@@ -4,7 +4,8 @@ export type ShortcutTarget = {
 } | null;
 
 export type ShortcutEvent = {
-  key: string;
+  code: string;
+  shiftKey?: boolean;
   target: unknown;
   metaKey?: boolean;
   ctrlKey?: boolean;
@@ -16,6 +17,7 @@ export type Bindings = Record<string, () => void>;
 
 const EDITABLE_TAGS = new Set(['INPUT', 'TEXTAREA', 'SELECT']);
 const ACTIVATABLE_TAGS = new Set(['BUTTON', 'A', 'SUMMARY']);
+const ACTIVATION_CODES = new Set(['Enter', 'NumpadEnter', 'Space']);
 
 export const isEditableTarget = (target: unknown): boolean => {
   if (typeof target !== 'object' || target === null) return false;
@@ -37,15 +39,20 @@ const isActivatable = (target: unknown): boolean => {
   return getAttribute?.call(target, 'role') === 'button';
 };
 
+export const bindingKey = (event: ShortcutEvent): string =>
+  event.shiftKey === true ? `Shift+${event.code}` : event.code;
+
 export const createShortcutHandler =
   (bindings: Bindings, isPaused: () => boolean = () => false) =>
-  (event: ShortcutEvent): void => {
-    if (isPaused()) return;
-    if (event.metaKey || event.ctrlKey || event.altKey) return;
-    if (isEditableTarget(event.target)) return;
-    if (event.key === 'Enter' && isActivatable(event.target)) return;
-    const binding = bindings[event.key] ?? bindings[event.key.toLowerCase()];
-    if (!binding) return;
+  (event: ShortcutEvent): boolean => {
+    if (isPaused()) return false;
+    if (event.metaKey || event.ctrlKey || event.altKey) return false;
+    if (isEditableTarget(event.target)) return false;
+    if (ACTIVATION_CODES.has(event.code) && isActivatable(event.target))
+      return false;
+    const binding = bindings[bindingKey(event)];
+    if (!binding) return false;
     event.preventDefault();
     binding();
+    return true;
   };

@@ -1,4 +1,4 @@
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { toColleague, type Colleague } from './qs/map';
 import type { RawPlannerService } from './qs/types';
 import { monthDays } from '~~/shared/utils/ymd';
@@ -21,7 +21,7 @@ type Deps = {
     endDate: string,
   ) => Promise<RawPlannerService[]>;
   employeeId: () => number;
-  today: () => string;
+  focusDate: () => string;
 };
 
 const monthOf = (ymd: string): string => ymd.slice(0, 7);
@@ -29,9 +29,8 @@ const monthOf = (ymd: string): string => ymd.slice(0, 7);
 export const createWhosOff = ({
   getPlannerService,
   employeeId,
-  today,
+  focusDate,
 }: Deps) => {
-  const focusDate = ref(today());
   const months = ref(new Map<string, Colleague[]>());
   const status = ref<WhosOffStatus>('idle');
   const pending = new Map<string, Promise<void>>();
@@ -68,14 +67,9 @@ export const createWhosOff = ({
     return job;
   };
 
-  const load = (): Promise<void> => loadMonth(monthOf(focusDate.value));
+  const load = (): Promise<void> => loadMonth(monthOf(focusDate()));
 
-  const focus = async (ymd: string): Promise<void> => {
-    focusDate.value = ymd;
-    await loadMonth(monthOf(ymd));
-  };
-
-  const todayFocus = (): Promise<void> => focus(today());
+  watch(focusDate, (ymd) => void loadMonth(monthOf(ymd)));
 
   const offOn = (ymd: string): OffEntry[] => {
     const colleagues = months.value.get(monthOf(ymd)) ?? [];
@@ -96,9 +90,10 @@ export const createWhosOff = ({
     return entries;
   };
 
-  const focused = computed(() => offOn(focusDate.value));
+  const focused = computed(() => offOn(focusDate()));
+  const date = computed(focusDate);
 
-  return { focusDate, status, focused, load, focus, today: todayFocus, offOn };
+  return { focusDate: date, status, focused, load, offOn };
 };
 
 export type WhosOffStore = ReturnType<typeof createWhosOff>;

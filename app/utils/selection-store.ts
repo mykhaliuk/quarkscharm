@@ -1,4 +1,4 @@
-import { computed, reactive, ref } from 'vue';
+import { computed, reactive, ref, toRaw } from 'vue';
 import { addDays, daysBetween } from '~~/shared/utils/ymd';
 import {
   slotsToRuns,
@@ -27,7 +27,10 @@ type Deps = {
   occupant?: (ymd: string, half: Half) => number | null;
 };
 
+type Snapshot = { paint: Map<string, Slot>; editing: number | null };
+
 const HALVES: Half[] = ['am', 'pm'];
+const HISTORY_DEPTH = 10;
 
 const same = (current: Paint | null, natureId: number): boolean =>
   current !== null && current.natureId === natureId;
@@ -42,6 +45,48 @@ export const createSelection = ({
   const brush = ref<number | null>(null);
   const paint = reactive(new Map<string, Slot>());
   const editing = ref<number | null>(null);
+  const history: Snapshot[] = [];
+  const future: Snapshot[] = [];
+
+  const snapshot = (): Snapshot => ({
+    paint: new Map(toRaw(paint)),
+    editing: editing.value,
+  });
+
+  const push = (stack: Snapshot[], entry: Snapshot) => {
+    stack.push(entry);
+    if (stack.length > HISTORY_DEPTH) stack.shift();
+  };
+
+  const restore = (entry: Snapshot) => {
+    paint.clear();
+    for (const [ymd, slot] of entry.paint) paint.set(ymd, slot);
+    editing.value = entry.editing;
+  };
+
+  const remember = () => {
+    push(history, snapshot());
+    future.length = 0;
+  };
+
+  const forget = () => {
+    history.length = 0;
+    future.length = 0;
+  };
+
+  const undo = () => {
+    const last = history.pop();
+    if (last === undefined) return;
+    push(future, snapshot());
+    restore(last);
+  };
+
+  const redo = () => {
+    const next = future.pop();
+    if (next === undefined) return;
+    push(history, snapshot());
+    restore(next);
+  };
 
   const setBrush = (natureId: number | null) => {
     brush.value = natureId;
@@ -73,6 +118,7 @@ export const createSelection = ({
   const paintHalf = (ymd: string, half: Half): PaintResult => {
     if (brush.value === null) return 'no-brush';
     if (!freeHalves(ymd).includes(half)) return 'not-selectable';
+    remember();
     const painted = same(slotOf(ymd)[half], brush.value);
     fill(ymd, [half], painted ? null : brush.value);
     return 'painted';
@@ -82,6 +128,7 @@ export const createSelection = ({
     if (brush.value === null) return 'no-brush';
     const halves = freeHalves(ymd);
     if (halves.length === 0) return 'not-selectable';
+    remember();
     const slot = slotOf(ymd);
     const natureId = brush.value;
     const full = halves.every((half) => same(slot[half], natureId));
@@ -91,6 +138,7 @@ export const createSelection = ({
 
   const paintRange = (from: string, to: string): PaintResult => {
     if (brush.value === null) return 'no-brush';
+    remember();
     const first = from <= to ? from : to;
     const count = Math.abs(daysBetween(from, to)) + 1;
     for (let i = 0; i < count; i++) {
@@ -101,12 +149,23 @@ export const createSelection = ({
     return 'painted';
   };
 
-  const clear = () => {
+  const reset = () => {
     paint.clear();
     editing.value = null;
+    forget();
+  };
+
+  const clear = () => {
+    if (editing.value !== null) {
+      reset();
+      return;
+    }
+    if (paint.size > 0) remember();
+    paint.clear();
   };
 
   const loadRequest = (target: EditTarget) => {
+    forget();
     paint.clear();
     editing.value = target.id;
     brush.value = target.natureId;
@@ -124,6 +183,7 @@ export const createSelection = ({
   };
 
   const removeRun = (run: Run) => {
+    remember();
     for (const day of run.days) {
       const slot = slotOf(day.date);
       store(day.date, {
@@ -131,7 +191,7 @@ export const createSelection = ({
         pm: day.pm ? null : slot.pm,
       });
     }
-    if (paint.size === 0) editing.value = null;
+    if (paint.size === 0 && editing.value !== null) reset();
   };
 
   const runs = computed<KeyedRun[]>(() =>
@@ -151,6 +211,10 @@ export const createSelection = ({
     paintDay,
     paintRange,
     clear,
+    reset,
+    forget,
+    undo,
+    redo,
     loadRequest,
     removeRun,
   };

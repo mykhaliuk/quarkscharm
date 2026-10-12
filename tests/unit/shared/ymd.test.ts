@@ -4,6 +4,7 @@ import {
   daysBetween,
   isYmd,
   monthDays,
+  moveMonth,
   today,
   weekday,
   yearMonths,
@@ -93,5 +94,20 @@ describe('today', () => {
     expect(isYmd(value)).toBe(true);
     const utc = new Date().toISOString().slice(0, 10);
     expect(Math.abs(daysBetween(utc, value))).toBeLessThanOrEqual(1);
+  });
+});
+
+describe('moveMonth', () => {
+  test('keeps the day or clamps it to the last day of a shorter month', () => {
+    expect(moveMonth('2026-01-31', 1)).toBe('2026-02-28');
+    expect(moveMonth('2028-01-31', 1)).toBe('2028-02-29');
+    expect(moveMonth('2026-03-31', -1)).toBe('2026-02-28');
+    expect(moveMonth('2026-03-10', 4)).toBe('2026-07-10');
+  });
+
+  test('crosses the year in both directions', () => {
+    expect(moveMonth('2026-11-15', 4)).toBe('2027-03-15');
+    expect(moveMonth('2026-02-15', -4)).toBe('2025-10-15');
+    expect(moveMonth('2026-12-31', 1)).toBe('2027-01-31');
   });
 });

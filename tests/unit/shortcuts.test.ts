@@ -24,26 +24,61 @@ describe('isEditableTarget', () => {
   });
 });
 
+const event = (
+  code: string,
+  tagName = 'BODY',
+  extra: Record<string, unknown> = {},
+) => {
+  const state = { prevented: false };
+  return {
+    state,
+    value: {
+      code,
+      target: target(tagName),
+      preventDefault: () => {
+        state.prevented = true;
+      },
+      ...extra,
+    },
+  };
+};
+
 describe('createShortcutHandler', () => {
-  test('calls the binding for the key and prevents the default', () => {
+  test('calls the binding for the code and prevents the default', () => {
     const hits: string[] = [];
     const handle = createShortcutHandler({
       ArrowLeft: () => hits.push('left'),
-      t: () => hits.push('t'),
+      KeyT: () => hits.push('t'),
     });
-    let prevented = 0;
-    handle({
-      key: 'ArrowLeft',
-      target: target('BODY'),
-      preventDefault: () => prevented++,
-    });
-    handle({
-      key: 'T',
-      target: target('BODY'),
-      preventDefault: () => prevented++,
-    });
+    const left = event('ArrowLeft');
+    const t = event('KeyT', 'BODY', { key: 't' });
+    expect(handle(left.value)).toBe(true);
+    expect(handle(t.value)).toBe(true);
     expect(hits).toEqual(['left', 't']);
-    expect(prevented).toBe(2);
+    expect(left.state.prevented).toBe(true);
+    expect(t.state.prevented).toBe(true);
+  });
+
+  test('a Russian layout reaches the binding of the physical key', () => {
+    const hits: string[] = [];
+    const handle = createShortcutHandler({ KeyJ: () => hits.push('j') });
+    handle(event('KeyJ', 'BODY', { key: 'о' }).value);
+    expect(hits).toEqual(['j']);
+  });
+
+  test('Shift selects the Shift binding and never the plain one', () => {
+    const hits: string[] = [];
+    const handle = createShortcutHandler({
+      KeyJ: () => hits.push('j'),
+      'Shift+KeyJ': () => hits.push('J'),
+    });
+    handle(event('KeyJ', 'BODY', { key: 'J', shiftKey: true }).value);
+    handle(event('KeyJ', 'BODY', { key: 'j', shiftKey: false }).value);
+    expect(hits).toEqual(['J', 'j']);
+    const plain = createShortcutHandler({ KeyT: () => hits.push('t') });
+    const shifted = event('KeyT', 'BODY', { shiftKey: true });
+    expect(plain(shifted.value)).toBe(false);
+    expect(shifted.state.prevented).toBe(false);
   });
 
   test('ignores keys while an input is focused or with a modifier', () => {
@@ -51,62 +86,55 @@ describe('createShortcutHandler', () => {
     const handle = createShortcutHandler({
       ArrowLeft: () => hits.push('left'),
     });
-    handle({
-      key: 'ArrowLeft',
-      target: target('INPUT'),
-      preventDefault: () => {},
-    });
-    handle({
-      key: 'ArrowLeft',
-      target: target('BODY'),
-      metaKey: true,
-      preventDefault: () => {},
-    });
-    handle({
-      key: 'ArrowLeft',
-      target: target('BODY'),
-      ctrlKey: true,
-      preventDefault: () => {},
-    });
+    handle(event('ArrowLeft', 'INPUT').value);
+    handle(event('ArrowLeft', 'SELECT').value);
+    handle(event('ArrowLeft', 'BODY', { metaKey: true }).value);
+    handle(event('ArrowLeft', 'BODY', { ctrlKey: true }).value);
+    handle(event('ArrowLeft', 'BODY', { altKey: true }).value);
     expect(hits).toEqual([]);
   });
 
   test('ignores unknown keys', () => {
     const handle = createShortcutHandler({ ArrowLeft: () => {} });
-    let prevented = 0;
-    handle({
-      key: 'x',
-      target: target('BODY'),
-      preventDefault: () => prevented++,
-    });
-    expect(prevented).toBe(0);
+    const x = event('KeyX');
+    expect(handle(x.value)).toBe(false);
+    expect(x.state.prevented).toBe(false);
   });
 });
 
-const event = (key: string, tagName: string) => {
-  const state = { prevented: false };
-  return {
-    state,
-    value: {
-      key,
-      target: target(tagName),
-      preventDefault: () => {
-        state.prevented = true;
-      },
-    },
-  };
-};
-
 describe('shortcuts and focused controls', () => {
-  test('Enter on a focused button or link keeps its own action', () => {
+  test('Enter or Space on a focused button or link keeps its own action', () => {
     const hits: string[] = [];
-    const handle = createShortcutHandler({ Enter: () => hits.push('enter') });
+    const handle = createShortcutHandler({
+      Enter: () => hits.push('enter'),
+      Space: () => hits.push('space'),
+    });
     for (const tag of ['BUTTON', 'A', 'SUMMARY']) {
-      const e = event('Enter', tag);
-      handle(e.value);
-      expect(e.state.prevented).toBe(false);
+      for (const code of ['Enter', 'Space']) {
+        const e = event(code, tag);
+        handle(e.value);
+        expect(e.state.prevented).toBe(false);
+      }
     }
+    const role = event('Space', 'DIV', {
+      target: {
+        tagName: 'DIV',
+        isContentEditable: false,
+        getAttribute: () => 'button',
+      },
+    });
+    handle(role.value);
+    expect(role.state.prevented).toBe(false);
     expect(hits).toEqual([]);
+  });
+
+  test('Space on the page body reaches the binding and stops the scroll', () => {
+    const hits: string[] = [];
+    const handle = createShortcutHandler({ Space: () => hits.push('space') });
+    const e = event('Space');
+    handle(e.value);
+    expect(hits).toEqual(['space']);
+    expect(e.state.prevented).toBe(true);
   });
 
   test('a paused handler ignores every key', () => {
@@ -115,7 +143,9 @@ describe('shortcuts and focused controls', () => {
       { Escape: () => hits.push('escape') },
       () => true,
     );
-    handle(event('Escape', 'BODY').value);
+    const e = event('Escape');
+    expect(handle(e.value)).toBe(false);
+    expect(e.state.prevented).toBe(false);
     expect(hits).toEqual([]);
   });
 });

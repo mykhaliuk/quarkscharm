@@ -1,23 +1,25 @@
 import { describe, expect, test } from 'bun:test';
+import { nextTick, ref } from 'vue';
 import { createWhosOff } from '~/utils/whos-off-store';
 import plannerService from '../fixtures/qs/planner-service.json';
 
 const build = (over: Partial<Parameters<typeof createWhosOff>[0]> = {}) => {
   const calls: string[] = [];
+  const cursor = ref('2026-10-12');
   const store = createWhosOff({
     getPlannerService: async (begin, end) => {
       calls.push(`${begin}..${end}`);
       return plannerService;
     },
     employeeId: () => 9001,
-    today: () => '2026-10-12',
+    focusDate: () => cursor.value,
     ...over,
   });
-  return { store, calls };
+  return { store, calls, cursor };
 };
 
 describe('whos-off store', () => {
-  test('focusDate defaults to today and loads the focused month once', async () => {
+  test('focusDate is the cursor day and loads the focused month once', async () => {
     const { store, calls } = build();
     expect(store.focusDate.value).toBe('2026-10-12');
     await store.load();
@@ -51,21 +53,20 @@ describe('whos-off store', () => {
     expect(store.offOn('2026-10-13')).toEqual([]);
   });
 
-  test('a focus change to another month fetches that month once and keeps the first', async () => {
-    const { store, calls } = build();
+  test('the store follows the cursor and fetches each month once', async () => {
+    const { store, calls, cursor } = build();
     await store.load();
-    await store.focus('2026-12-24');
-    await store.focus('2026-12-25');
-    await store.focus('2026-10-05');
+    cursor.value = '2026-12-24';
+    await nextTick();
+    expect(store.focusDate.value).toBe('2026-12-24');
+    cursor.value = '2026-12-25';
+    await nextTick();
+    cursor.value = '2026-10-05';
+    await nextTick();
+    await store.load();
     expect(calls).toEqual(['2026-10-01..2026-10-31', '2026-12-01..2026-12-31']);
     expect(store.focusDate.value).toBe('2026-10-05');
-  });
-
-  test('today returns the focus to today', async () => {
-    const { store } = build();
-    await store.focus('2026-12-24');
-    store.today();
-    expect(store.focusDate.value).toBe('2026-10-12');
+    expect(store.focused.value).toEqual([]);
   });
 
   test('a failed month marks the status failed and can be loaded again', async () => {
