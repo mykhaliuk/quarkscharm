@@ -18,6 +18,8 @@
     "openspec",
     "bun.lock",
     "docs/design",
-    "docs/openapi-times.json"
+    "docs/openapi-times.json",
+    "test-results",
+    "playwright-report"
   ]
 }

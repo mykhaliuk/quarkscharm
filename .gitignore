@@ -21,3 +21,5 @@ tmp
 !.claude/commands/
 !.claude/skills/
 !.claude/rules/
+test-results
+playwright-report
