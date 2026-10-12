@@ -1,9 +1,12 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, onBeforeUnmount } from 'vue';
+import { createConfirmTimer } from '~/utils/confirm-timer';
 import { formatDayRange, formatDays } from '~/utils/format';
 import type { AbsenceRequest } from '~/utils/qs/map';
 import type { CardAnchor } from '~/composables/useRequestCard';
 import { isPending } from '~~/shared/utils/status';
+
+const CONFIRM_MS = 5000;
 
 const props = defineProps<{
   request: AbsenceRequest;
@@ -16,16 +19,25 @@ const props = defineProps<{
 const emit = defineEmits<{
   (e: 'change', request: AbsenceRequest): void;
   (e: 'cancel', request: AbsenceRequest): void;
+  (e: 'hold'): void;
+  (e: 'release'): void;
 }>();
+
+const confirm = createConfirmTimer({ timeoutMs: CONFIRM_MS });
+onBeforeUnmount(confirm.decline);
 
 const natureId = computed(() => props.request.segments[0]?.natureId ?? null);
 const status = computed(() =>
   isPending(props.request.statusId) ? 'pending' : 'validated',
 );
+const dates = computed(() =>
+  formatDayRange(props.request.beginDate, props.request.endDate),
+);
 const style = computed(() => ({
   top: `${props.anchor.top}px`,
   left: `${props.anchor.left}px`,
 }));
+const accept = () => confirm.accept(async () => emit('cancel', props.request));
 </script>
 
 <template>
@@ -44,10 +56,22 @@ const style = computed(() => ({
       <span class="status caption">{{ status }}</span>
     </div>
     <div class="dates caption">
-      {{ formatDayRange(request.beginDate, request.endDate) }} ·
-      {{ formatDays(request.duration) }}
+      {{ dates }} · {{ formatDays(request.duration) }}
     </div>
-    <div class="acts">
+    <div
+      v-if="confirm.confirming.value"
+      class="acts confirm"
+      role="alertdialog"
+    >
+      <span class="caption">Cancel {{ label(natureId) }} {{ dates }}?</span>
+      <button type="button" class="btn danger label" @click="accept">
+        Yes
+      </button>
+      <button type="button" class="btn label" @click="confirm.decline">
+        No
+      </button>
+    </div>
+    <div v-else class="acts">
       <button type="button" class="btn label" @click="emit('change', request)">
         Change
       </button>
@@ -55,7 +79,7 @@ const style = computed(() => ({
         v-if="request.cancelSequenceId !== null"
         type="button"
         class="btn label"
-        @click="emit('cancel', request)"
+        @click="confirm.ask"
       >
         Cancel
       </button>
@@ -67,7 +91,7 @@ const style = computed(() => ({
 .card {
   position: fixed;
   z-index: 5;
-  width: 260px;
+  width: 280px;
   padding: var(--space-3) var(--space-4);
   background: var(--surface);
   border-radius: var(--radius-card);
@@ -101,8 +125,13 @@ const style = computed(() => ({
 
 .acts {
   display: flex;
+  align-items: center;
   gap: var(--space-2);
   margin-top: var(--space-2);
+}
+
+.confirm {
+  flex-wrap: wrap;
 }
 
 .btn {
@@ -117,5 +146,10 @@ const style = computed(() => ({
 .btn:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
+}
+
+.danger {
+  border-color: var(--error);
+  color: var(--error);
 }
 </style>
