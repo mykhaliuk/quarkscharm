@@ -45,10 +45,9 @@ test('shorten a two-day request to one day', async ({ page }) => {
   );
   await expect(cell(page, '2026-10-22')).toHaveClass(/selected/);
   await expect(cell(page, '2026-10-23')).toHaveClass(/selected/);
-  await expect(page.locator('[data-nature-id="75"]')).toHaveAttribute(
-    'aria-pressed',
-    'true',
-  );
+  await expect(
+    page.getByTestId('brush-bar').locator('[data-nature-id="75"]'),
+  ).toHaveAttribute('aria-pressed', 'true');
   await cell(page, '2026-10-23').click();
   await expect(cell(page, '2026-10-23')).not.toHaveClass(/selected/);
   const row = page.getByTestId('run-row').first();

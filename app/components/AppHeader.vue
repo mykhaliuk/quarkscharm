@@ -54,7 +54,7 @@ const forget = async () => {
         ›
       </button>
     </div>
-    <div class="counters"><slot name="counters" /></div>
+    <div class="counters"><Counters /></div>
     <div class="token caption">
       <span data-testid="token-until">token until {{ until }}</span>
       <button type="button" class="link" @click="forget">Forget token</button>

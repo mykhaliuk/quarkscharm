@@ -1,8 +1,6 @@
 <template>
   <div class="app">
-    <AppHeader>
-      <template #counters><slot name="counters" /></template>
-    </AppHeader>
+    <AppHeader />
     <slot />
     <TokenPrompt />
   </div>

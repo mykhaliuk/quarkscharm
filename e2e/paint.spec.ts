@@ -4,6 +4,7 @@ import { buildToken } from './fixtures/token';
 import previewSplit from '../tests/fixtures/qs/preview-split.json' with { type: 'json' };
 import createdFixture from '../tests/fixtures/qs/create.json' with { type: 'json' };
 import requestsFixture from '../tests/fixtures/qs/requests.json' with { type: 'json' };
+import entitlementsFixture from '../tests/fixtures/qs/entitlements.json' with { type: 'json' };
 
 const connect = async (page: Page): Promise<QsFixtures> => {
   const qs = await installQsFixtures(page);
@@ -32,10 +33,9 @@ test('drag Monday to Friday paints five days and the panel lists one run', async
 }) => {
   const qs = await connect(page);
   await page.keyboard.press('f');
-  await expect(page.locator('[data-nature-id="17"]')).toHaveAttribute(
-    'aria-pressed',
-    'true',
-  );
+  await expect(
+    page.getByTestId('brush-bar').locator('[data-nature-id="17"]'),
+  ).toHaveAttribute('aria-pressed', 'true');
   const from = await cell(page, '2026-11-02').boundingBox();
   const to = await cell(page, '2026-11-06').boundingBox();
   await page.mouse.move(from!.x + 10, from!.y + 10);
@@ -271,4 +271,62 @@ test('Enter submits every previewed run', async ({ page }) => {
           .length,
     )
     .toBe(2);
+});
+
+test('painting two CP days shows the projected balance in the counter', async ({
+  page,
+}) => {
+  const qs = await connect(page);
+  qs.override('GET', /requests\/preview$/, () => ({
+    status: 200,
+    body: {
+      natures: [
+        { id: 14, reference: 'CP', entitlement: { id: 388, balance: 4.82 } },
+      ],
+      segments: [
+        {
+          beginDate: '2026-11-02T00:00:00Z',
+          endDate: '2026-11-03T23:00:00Z',
+          duration: 2,
+          natureId: 14,
+        },
+      ],
+      overlappingRequests: [],
+      conflictingEvents: [],
+      warnings: [],
+    },
+  }));
+  const cp = page.locator('[data-entitlement-id="388"]');
+  await expect(cp.getByTestId('balance')).toHaveText('4.82');
+  await page.keyboard.press('c');
+  const from = await cell(page, '2026-11-02').boundingBox();
+  const to = await cell(page, '2026-11-03').boundingBox();
+  await page.mouse.move(from!.x + 10, from!.y + 10);
+  await page.mouse.down();
+  await page.mouse.move(to!.x + 10, to!.y + 10, { steps: 4 });
+  await page.mouse.up();
+  await expect(cp.getByTestId('balance')).toHaveText('4.82 → 2.82');
+  await expect(
+    page.locator('[data-entitlement-id="656"]').getByTestId('balance'),
+  ).toHaveText('6');
+  await page.keyboard.press('Escape');
+  await expect(cp.getByTestId('balance')).toHaveText('4.82');
+});
+
+test('counters reload after a cancel', async ({ page }) => {
+  const qs = await connect(page);
+  await expect(
+    page.locator('[data-entitlement-id="388"]').getByTestId('balance'),
+  ).toHaveText('4.82');
+  qs.override('GET', /times\/v3\/entitlements$/, () => ({
+    status: 200,
+    body: [{ ...entitlementsFixture[0]!, balance: 5.32, used: 3 }],
+  }));
+  await cell(page, '2026-10-22').click();
+  const card = page.getByTestId('request-card');
+  await card.getByRole('button', { name: 'Cancel' }).click();
+  await card.getByRole('button', { name: 'Yes' }).click();
+  await expect(
+    page.locator('[data-entitlement-id="388"]').getByTestId('balance'),
+  ).toHaveText('5.32');
 });
