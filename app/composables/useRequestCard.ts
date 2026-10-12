@@ -1,6 +1,9 @@
 import type { AbsenceRequest } from '~/utils/qs/map';
 
 const HOVER_DELAY_MS = 150;
+const LEAVE_DELAY_MS = 250;
+const CARD_WIDTH = 300;
+const CARD_HEIGHT = 150;
 
 export type CardAnchor = { top: number; left: number };
 
@@ -8,7 +11,11 @@ const anchorOf = (date: string): CardAnchor => {
   const cell = document.querySelector<HTMLElement>(`[data-date="${date}"]`);
   if (!cell) return { top: 0, left: 0 };
   const rect = cell.getBoundingClientRect();
-  return { top: rect.bottom + 6, left: rect.left };
+  const below = rect.bottom + 6;
+  const top =
+    below + CARD_HEIGHT > window.innerHeight ? rect.top - CARD_HEIGHT : below;
+  const left = Math.min(rect.left, window.innerWidth - CARD_WIDTH);
+  return { top: Math.max(0, top), left: Math.max(0, left) };
 };
 
 export const useRequestCard = (
@@ -50,8 +57,12 @@ export const useRequestCard = (
   const leave = () => {
     if (pinned.value) return;
     clearTimer();
-    request.value = null;
+    timer = setTimeout(() => {
+      request.value = null;
+    }, LEAVE_DELAY_MS);
   };
+
+  const hold = () => clearTimer();
 
   const pin = (date: string) => {
     if (requestIdOf(date) === null) return;
@@ -80,5 +91,5 @@ export const useRequestCard = (
     clearTimer();
   });
 
-  return { request, anchor, pinned, enter, leave, pin, hide };
+  return { request, anchor, pinned, enter, leave, hold, pin, hide };
 };

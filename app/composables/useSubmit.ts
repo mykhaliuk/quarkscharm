@@ -3,11 +3,14 @@ import { whenConnected } from '~/utils/qs/retry';
 import { createSubmit, type SubmitStore } from '~/utils/submit-store';
 
 let store: SubmitStore | null = null;
-const afterChangeHooks: (() => Promise<void>)[] = [];
+const afterChangeHooksList: (() => Promise<void>)[] = [];
 
 export const onAfterChange = (hook: () => Promise<void>) => {
-  afterChangeHooks.push(hook);
+  afterChangeHooksList.push(hook);
 };
+
+export const afterChangeHooks = (): Promise<void>[] =>
+  afterChangeHooksList.map((hook) => hook());
 
 export const useSubmit = (): SubmitStore => {
   if (store !== null) return store;
@@ -33,10 +36,7 @@ export const useSubmit = (): SubmitStore => {
       if (run) selection.removeRun(run);
     },
     afterChange: async () => {
-      await Promise.all([
-        yearStore.reload(),
-        ...afterChangeHooks.map((hook) => hook()),
-      ]);
+      await Promise.all([yearStore.reload(), ...afterChangeHooks()]);
     },
   });
   return store;

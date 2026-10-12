@@ -1,8 +1,8 @@
 import { previewRequest, previewUpdate } from '~/utils/qs/api';
 import { whenConnected } from '~/utils/qs/retry';
+import { previewCallFor } from '~/utils/preview-call';
 import { createPreviews, type PreviewStore } from '~/utils/previews-store';
 import type { KeyedRun } from '~/utils/selection-store';
-import { toApiDate } from '~~/shared/utils/api-dates';
 
 let store: PreviewStore | null = null;
 
@@ -13,17 +13,24 @@ export const usePreviews = (): PreviewStore => {
   const natures = useNatures();
   const created = createPreviews({
     preview: (run: KeyedRun) => {
-      const employeeId = session.state.me?.employeeId ?? 0;
-      const begin = toApiDate(run.beginDate, run.beginHour);
-      const end = toApiDate(run.endDate, run.endHour);
-      const editing = selection.editing.value;
+      const call = previewCallFor(
+        run,
+        selection.editing.value,
+        session.state.me?.employeeId ?? 0,
+      );
       return whenConnected(() =>
-        editing === null
-          ? previewRequest(employeeId, begin, end)
-          : previewUpdate(editing, employeeId, begin, end),
+        call.requestId === null
+          ? previewRequest(call.employeeId, call.begin, call.end)
+          : previewUpdate(
+              call.requestId,
+              call.employeeId,
+              call.begin,
+              call.end,
+            ),
       );
     },
   });
+  watch(selection.editing, () => created.clear());
   watch(selection.runs, (runs) => created.sync(runs), { immediate: true });
   watch(
     () => [...created.state.values()],

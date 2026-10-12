@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { CellPress } from '~/utils/calendar-events';
-import type { Preview } from '~/utils/qs/map';
+import type { AbsenceRequest, Preview } from '~/utils/qs/map';
 import type { YearPart } from '~/utils/year-store';
 import { isPending } from '~~/shared/utils/status';
 import { today } from '~~/shared/utils/ymd';
@@ -14,6 +14,7 @@ const natures = useNatures();
 const selection = useSelection();
 const previews = usePreviews();
 const submit = useSubmit();
+const { cancel } = useCancel();
 
 const todayYmd = computed(() =>
   today(session.state.me?.timeZone ?? 'Europe/Paris'),
@@ -108,6 +109,25 @@ const onRelease = () => {
   else selection.paintDay(from);
 };
 
+const startChange = (request: AbsenceRequest) => {
+  const natureId = request.segments[0]?.natureId;
+  if (natureId === undefined || natureId === null) return;
+  card.hide();
+  submit.clearErrors();
+  selection.loadRequest({
+    id: request.id,
+    natureId,
+    beginDate: request.beginDate,
+    beginHour: request.beginHour,
+    endDate: request.endDate,
+    endHour: request.endHour,
+  });
+};
+const confirmCancel = async (request: AbsenceRequest) => {
+  card.hide();
+  await cancel(request);
+};
+
 const selectBrush = (index: number) => {
   const id = natures.brushes.value[index];
   if (id !== undefined) selection.setBrush(id);
@@ -186,6 +206,10 @@ onBeforeUnmount(() => window.removeEventListener('mouseup', onRelease));
       :pinned="card.pinned.value"
       :label="natures.label"
       :color-token="natures.colorToken"
+      @change="startChange"
+      @cancel="confirmCancel"
+      @hold="card.hold"
+      @release="card.leave"
     />
   </main>
 </template>
