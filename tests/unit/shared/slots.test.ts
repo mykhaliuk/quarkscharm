@@ -140,9 +140,7 @@ describe('slotsToRuns', () => {
       ['2026-10-16', full(75)],
       ['2026-10-19', full(75)],
     ]);
-    const isSelectable = (ymd: string) =>
-      !['2026-10-17', '2026-10-18'].includes(ymd);
-    const runs = slotsToRuns(selection, isSelectable);
+    const runs = slotsToRuns(selection, skipWeekend);
     expect(runs).toHaveLength(1);
     expect(runs[0]).toMatchObject({
       beginDate: '2026-10-16',
