@@ -68,7 +68,7 @@ export const createSession = ({ fetchMe, now = Date.now }: Deps) => {
   const dropToken = () => {
     state.token = null;
     state.expiresAt = null;
-    remove(TOKEN_KEY);
+    remove(TOKEN_KEY, 'session');
   };
 
   const connect = async (
@@ -89,7 +89,7 @@ export const createSession = ({ fetchMe, now = Date.now }: Deps) => {
       state.token = token;
       state.expiresAt = expiresAt;
       state.me = toMe(raw);
-      writeJson(TOKEN_KEY, token);
+      writeJson(TOKEN_KEY, token, 'session');
       setConnected();
       return { ok: true };
     } catch (error) {
@@ -127,11 +127,13 @@ export const createSession = ({ fetchMe, now = Date.now }: Deps) => {
   const restore = async (): Promise<void> => {
     const tenant = readJson<string>(TENANT_KEY);
     if (typeof tenant === 'string') state.tenant = tenant;
-    const token = readJson<string>(TOKEN_KEY);
+    // older versions kept the token in localStorage
+    remove(TOKEN_KEY);
+    const token = readJson<string>(TOKEN_KEY, 'session');
     if (typeof token !== 'string' || typeof tenant !== 'string') return;
     const expiresAt = tokenExpiry(token);
     if (expiresAt === null || expiresAt <= now()) {
-      remove(TOKEN_KEY);
+      remove(TOKEN_KEY, 'session');
       return;
     }
     await connect(tenant, token);

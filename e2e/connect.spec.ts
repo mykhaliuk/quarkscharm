@@ -75,8 +75,11 @@ test('forget token returns to connect with the tenant prefilled', async ({
   await page.getByRole('button', { name: 'Forget token' }).click();
   await expect(page).toHaveURL(/\/connect$/);
   await expect(page.getByLabel('Tenant')).toHaveValue('fulll');
-  const stored = await page.evaluate(() => localStorage.getItem('qc.token'));
-  expect(stored).toBeNull();
+  const stored = await page.evaluate(() => [
+    localStorage.getItem('qc.token'),
+    sessionStorage.getItem('qc.token'),
+  ]);
+  expect(stored).toEqual([null, null]);
 });
 
 test('a connected user opening /connect is sent to /', async ({ page }) => {

@@ -3,6 +3,7 @@ import { installQsFixtures, type QsFixtures } from './fixtures/qs';
 import { buildToken } from './fixtures/token';
 
 const connect = async (page: Page): Promise<QsFixtures> => {
+  await page.clock.setFixedTime(new Date('2026-10-12T09:00:00+02:00'));
   const qs = await installQsFixtures(page);
   await page.goto('/connect');
   await page.getByLabel('Tenant').fill('fulll');

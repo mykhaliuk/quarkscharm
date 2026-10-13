@@ -2,9 +2,10 @@ import { afterEach, beforeEach, describe, expect, test } from 'bun:test';
 import { createSession, type MeRaw } from '~/utils/session';
 import { QsError } from '~/utils/qs/error';
 
-const memory = new Map<string, string>();
-beforeEach(() => {
-  Object.defineProperty(globalThis, 'localStorage', {
+const local = new Map<string, string>();
+const tab = new Map<string, string>();
+const install = (name: string, memory: Map<string, string>) =>
+  Object.defineProperty(globalThis, name, {
     configurable: true,
     writable: true,
     value: {
@@ -13,8 +14,14 @@ beforeEach(() => {
       removeItem: (key: string) => void memory.delete(key),
     },
   });
+beforeEach(() => {
+  install('localStorage', local);
+  install('sessionStorage', tab);
 });
-afterEach(() => memory.clear());
+afterEach(() => {
+  local.clear();
+  tab.clear();
+});
 
 const b64url = (value: object) =>
   Buffer.from(JSON.stringify(value)).toString('base64url');
@@ -75,8 +82,9 @@ describe('connect', () => {
       pictureUrl: 'u',
       timeZone: 'Europe/Paris',
     });
-    expect(memory.get('qc.tenant')).toBe('"fulll"');
-    expect(memory.get('qc.token')).toBe(JSON.stringify(future));
+    expect(local.get('qc.tenant')).toBe('"fulll"');
+    expect(tab.get('qc.token')).toBe(JSON.stringify(future));
+    expect(local.has('qc.token')).toBe(false);
   });
 
   test('a rejected token clears the token, keeps the tenant', async () => {
@@ -88,8 +96,8 @@ describe('connect', () => {
     expect(session.state.status).toBe('anonymous');
     expect(session.state.tenant).toBe('fulll');
     expect(session.state.token).toBeNull();
-    expect(memory.has('qc.token')).toBe(false);
-    expect(memory.get('qc.tenant')).toBe('"fulll"');
+    expect(tab.has('qc.token')).toBe(false);
+    expect(local.get('qc.tenant')).toBe('"fulll"');
   });
 
   test('a rejected token in the expired prompt keeps the session expired', async () => {
@@ -122,7 +130,7 @@ describe('forget and expiry', () => {
     expect(session.state.token).toBeNull();
     expect(session.state.me).toBeNull();
     expect(session.state.tenant).toBe('fulll');
-    expect(memory.has('qc.token')).toBe(false);
+    expect(tab.has('qc.token')).toBe(false);
   });
 
   test('markExpired sets expired and a new token resumes waiters', async () => {
@@ -145,8 +153,8 @@ describe('forget and expiry', () => {
 
 describe('restore', () => {
   test('reconnects silently from storage', async () => {
-    memory.set('qc.tenant', '"fulll"');
-    memory.set('qc.token', JSON.stringify(future));
+    local.set('qc.tenant', '"fulll"');
+    tab.set('qc.token', JSON.stringify(future));
     const { session, calls } = build();
     await session.restore();
     expect(calls).toHaveLength(1);
@@ -154,14 +162,24 @@ describe('restore', () => {
   });
 
   test('drops an expired stored token and keeps the tenant', async () => {
-    memory.set('qc.tenant', '"fulll"');
-    memory.set('qc.token', JSON.stringify(past));
+    local.set('qc.tenant', '"fulll"');
+    tab.set('qc.token', JSON.stringify(past));
     const { session, calls } = build();
     await session.restore();
     expect(calls).toHaveLength(0);
     expect(session.state.status).toBe('anonymous');
     expect(session.state.tenant).toBe('fulll');
-    expect(memory.has('qc.token')).toBe(false);
+    expect(tab.has('qc.token')).toBe(false);
+  });
+
+  test('drops a token that an older version kept in localStorage', async () => {
+    local.set('qc.tenant', '"fulll"');
+    local.set('qc.token', JSON.stringify(future));
+    const { session, calls } = build();
+    await session.restore();
+    expect(calls).toHaveLength(0);
+    expect(session.state.status).toBe('anonymous');
+    expect(local.has('qc.token')).toBe(false);
   });
 
   test('stays anonymous with an empty store', async () => {
