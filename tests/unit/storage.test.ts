@@ -71,3 +71,32 @@ describe('storage', () => {
     expect(remove('qc.theme')).toBe(false);
   });
 });
+
+describe('session area', () => {
+  test('reads and writes sessionStorage, not localStorage', () => {
+    const tab = new Map<string, string>();
+    install({
+      getItem: () => {
+        throw new Error('local storage must not be used');
+      },
+    });
+    Object.defineProperty(globalThis, 'sessionStorage', {
+      configurable: true,
+      writable: true,
+      value: {
+        getItem: (key: string) => tab.get(key) ?? null,
+        setItem: (key: string, value: string) => void tab.set(key, value),
+        removeItem: (key: string) => void tab.delete(key),
+      },
+    });
+    expect(writeJson('qc.token', 'x', 'session')).toBe(true);
+    expect(readJson<string>('qc.token', 'session')).toBe('x');
+    expect(remove('qc.token', 'session')).toBe(true);
+    expect(tab.size).toBe(0);
+    Object.defineProperty(globalThis, 'sessionStorage', {
+      configurable: true,
+      writable: true,
+      value: undefined,
+    });
+  });
+});
