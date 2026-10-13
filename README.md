@@ -3,13 +3,17 @@
 The charm flavour of quarksUp: a personal helper for absences
 (congés, télétravail) on top of the quarksUp Times API.
 
+quarksCharm is keyboard first: you can move on the year, paint days,
+submit, change and cancel requests without the mouse. Press `?` in the
+app to see all the shortcuts.
+
 - Year calendar of your own absences, public holidays and non-working days
 - Paint days or half days with a nature brush, review quarksUp's own
   preview, submit all runs in one action
 - Change and cancel absences (cancel asks for confirmation)
 - Balances (congés payés, Fulll Off, time savings account when present)
   with the projected balance after the current selection
-- Who is off today in your service, or on any day you click
+- Who is off in your service on the cursor day
 
 ## Production
 
@@ -29,22 +33,39 @@ and keeps your selection and the displayed year.
 
 ## Keyboard
 
-| Key           | Action                             |
-| ------------- | ---------------------------------- |
-| `←` `→`       | previous or next year              |
-| `T` `F` `C`   | select the first three brushes     |
-| click         | paint a whole day                  |
-| Shift + click | paint the half under the pointer   |
-| drag          | paint every selectable day crossed |
-| Alt + click   | show who is off on that day        |
-| `Enter`       | submit the review panel            |
-| `Escape`      | clear the selection                |
+The cursor is the day with the focus ring. All actions apply to it.
+
+| Key               | Action                                      |
+| ----------------- | ------------------------------------------- |
+| `h` `l` / `←` `→` | one day back / forward                      |
+| `k` `j` / `↑` `↓` | one week back / forward                     |
+| `H` `L`           | one month back / forward                    |
+| `K` `J`           | four months back / forward                  |
+| `.`               | today                                       |
+| `[` `]`           | previous / next year                        |
+| `t` `f` `c`       | pick a brush; press again to drop it        |
+| `Space`           | paint or unpaint the cursor day             |
+| `a` `p`           | paint the morning / afternoon only          |
+| `v`               | start or leave a range; `Space` paints it   |
+| `u` `U`           | undo / redo a paint (10 steps)              |
+| `Escape`          | leave the range, clear, or drop the brush   |
+| `Enter`           | open the request card, or submit the review |
+| `e`               | change the request under the cursor         |
+| `x`               | cancel the request under the cursor         |
+| `?`               | show or hide the shortcut sheet             |
+
+The shortcuts read the physical key, so they work on all keyboard
+layouts. The mouse still works: a click paints a day and moves the
+cursor, Shift + click paints the half under the pointer, and a drag
+paints every selectable day crossed. A click on a request opens its
+card.
 
 ## Privacy
 
 quarksCharm has no database and no accounts. The server is a stateless
 relay: it forwards allow-listed quarksUp calls with your own bearer
-token, caches nothing and logs no header or body. The tenant, the token
+token, caches nothing and logs no header or body. The token stays in the
+session storage of the tab, so a new tab asks for it again. The tenant
 and the theme stay in your browser's local storage; everything fetched
 from quarksUp stays in memory and goes away with the tab. "Forget token"
 removes the token.
