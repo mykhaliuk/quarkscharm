@@ -4,6 +4,9 @@ import { toPreview, type Preview } from './qs/map';
 import type { RawPreview } from './qs/types';
 import type { KeyedRun } from './selection-store';
 
+export const NATURE_UNAVAILABLE_MESSAGE =
+  'This leave type is not available on these dates. Pick another one.';
+
 export type PreviewStatus = 'loading' | 'ready' | 'rejected' | 'unavailable';
 
 export type PreviewEntry = {
@@ -17,6 +20,9 @@ type Deps = {
   preview: (run: KeyedRun) => Promise<RawPreview>;
   debounceMs?: number;
 };
+
+const offers = (preview: Preview, natureId: number | null): boolean =>
+  natureId === null || preview.natures.some((n) => n.id === natureId);
 
 const signatureOf = (run: KeyedRun): string =>
   `${run.natureId}:${run.beginDate}T${run.beginHour}:${run.endDate}T${run.endHour}`;
@@ -39,9 +45,19 @@ export const createPreviews = ({ preview, debounceMs = 250 }: Deps) => {
     try {
       const raw = await preview(run);
       if (stale()) return;
+      const parsed = toPreview(raw);
+      if (!offers(parsed, run.natureId)) {
+        state.set(run.key, {
+          status: 'rejected',
+          preview: null,
+          messages: [NATURE_UNAVAILABLE_MESSAGE],
+          signature,
+        });
+        return;
+      }
       state.set(run.key, {
         status: 'ready',
-        preview: toPreview(raw),
+        preview: parsed,
         messages: [],
         signature,
       });

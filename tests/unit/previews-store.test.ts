@@ -1,5 +1,8 @@
 import { describe, expect, test } from 'bun:test';
-import { createPreviews } from '~/utils/previews-store';
+import {
+  createPreviews,
+  NATURE_UNAVAILABLE_MESSAGE,
+} from '~/utils/previews-store';
 import { QsError } from '~/utils/qs/error';
 import type { KeyedRun } from '~/utils/selection-store';
 import preview from '../fixtures/qs/preview.json';
@@ -149,6 +152,27 @@ describe('previews store', () => {
     expect(store.state.get('b')?.status).toBe('ready');
     expect(store.state.get('b')?.preview?.segments).toHaveLength(2);
     expect(store.state.get('b')?.preview?.warnings).toHaveLength(1);
+  });
+
+  test('a nature the preview does not offer on these dates rejects the run', async () => {
+    const withoutCp = {
+      ...preview,
+      natures: preview.natures.filter((nature) => nature.id !== 14),
+    };
+    const store = createPreviews({
+      preview: async () => withoutCp,
+      debounceMs: 0,
+    });
+    store.sync([
+      run('cp', 14, '2026-04-15', '2026-04-15'),
+      run('foff', 17, '2026-04-23', '2026-04-23'),
+    ]);
+    await tick(5);
+    expect(store.state.get('cp')?.status).toBe('rejected');
+    expect(store.state.get('cp')?.messages).toEqual([
+      NATURE_UNAVAILABLE_MESSAGE,
+    ]);
+    expect(store.state.get('foff')?.status).toBe('ready');
   });
 
   test('allReady is true only when every run is ready', async () => {
