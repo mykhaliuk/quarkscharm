@@ -106,7 +106,8 @@ Factorial's `x-api-user-id`.
 
 Array of `{ id, label, employees: [ <same shape as planners/me> ] }`, one item
 per service (TECH 42, PRODUIT 39, FINANCE 37, RH 41, RELATION CLIENT 40,
-MARKETING 38, COMMERCE 36, plus one unlabelled). Segments in this view have
+MARKETING 38, COMMERCE 36, plus one unlabelled). On 2026-10-15 each employee
+has `entity { id, label }` at the root and no `position`. Segments in this view have
 `natureId: null` for other people (privacy), `validated` boolean.
 
 ### entitlements
@@ -245,6 +246,13 @@ New; other statuses may expose a different sequence, read it from the
 object, do not hard-code). The quarksUp UI runs this with no confirmation
 dialog: one click cancels. Product requirement for the new helper: cancel
 only after an explicit confirmation step.
+
+A validated request (status 2) has no `CancelRequest`. It has
+`_workflows.CancellationRequest` instead (observed 2026-10-15):
+`label 'Demander l'annulation'`, `sequenceId 11282`,
+`nextStatus 'Absence_CancelOngoingManager'`, `fields []`. The call is the same
+`PUT .../workflows/{seq}`; the request then waits in status 5 for the
+manager.
 
 ## 7. Day / half-day encoding
 

@@ -71,10 +71,10 @@
         }
       ],
       "_workflows": {
-        "CancelRequest": {
-          "label": "Annuler la demande",
-          "href": "https://api.quarksup.net/times/v3/requests/170/workflows/11290",
-          "sequenceId": 11290,
+        "CancellationRequest": {
+          "label": "Demander l'annulation",
+          "href": "https://api.quarksup.net/times/v3/requests/170/workflows/11282",
+          "sequenceId": 11282,
           "nextStatus": "Absence_CancelOngoingManager",
           "fields": []
         }

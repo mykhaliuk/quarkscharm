@@ -32,12 +32,20 @@ describe('toRequest', () => {
         },
       ],
       cancelSequenceId: 11283,
+      cancelNeedsApproval: false,
     });
+  });
+
+  test('a validated request exposes a cancellation that needs approval', () => {
+    const request = toRequest(requests.value[2]!);
+    expect(request.cancelSequenceId).toBe(11282);
+    expect(request.cancelNeedsApproval).toBe(true);
   });
 
   test('a request without a cancel workflow has a null sequence', () => {
     const request = toRequest(requests.value[1]!);
     expect(request.cancelSequenceId).toBeNull();
+    expect(request.cancelNeedsApproval).toBe(false);
     expect(request.beginHour).toBe(13);
     expect(request.endHour).toBe(23);
     expect(request.comment).toBe('dentiste');
@@ -86,6 +94,7 @@ describe('toColleague', () => {
 
   test('uses the full picture url as avatar, not the small thumbnail', () => {
     const colleague = toColleague(plannerService[0]!.employees[1]!);
+    expect(colleague.entity).toBe('TECH');
     expect(colleague.avatarUrl).toBe('https://cdn.example.test/p/9002.png');
     expect(colleague.slots.get('2026-10-12')).toEqual({
       am: { natureId: null, requestId: 7001 },

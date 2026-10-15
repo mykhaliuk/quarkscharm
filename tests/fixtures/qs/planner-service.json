@@ -47,10 +47,9 @@
           "id": 250,
           "label": "Backend developer"
         },
-        "position": {
-          "entity": {
-            "label": "TECH"
-          }
+        "entity": {
+          "id": 42,
+          "label": "TECH"
         },
         "nonWorkingDates": [],
         "absences": [

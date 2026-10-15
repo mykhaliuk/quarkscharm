@@ -106,3 +106,15 @@ test('x on a request day opens the card with the cancel question', async ({
   await expect(card.getByRole('button', { name: 'Cancel' })).toBeVisible();
   expect(qs.callsTo(/workflows\/\d+$/)).toHaveLength(0);
 });
+
+test('a validated request asks for the cancellation', async ({ page }) => {
+  const qs = await connect(page);
+  await cell(page, '2026-12-29').click();
+  const card = page.getByTestId('request-card');
+  await card.getByRole('button', { name: 'Ask to cancel' }).click();
+  await expect(card).toContainText('Ask to cancel Congés Payés');
+  await card.getByRole('button', { name: 'Yes' }).click();
+  const calls = qs.callsTo(/requests\/170\/workflows\/11282$/);
+  expect(calls).toHaveLength(1);
+  expect(calls[0]!.body).toEqual({ fields: { comment: null } });
+});
