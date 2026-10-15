@@ -21,6 +21,30 @@ https://quarkscharm.vercel.app, deployed from `main`.
 
 ## How to connect
 
+### With the token bridge extension (Chrome, Edge)
+
+The extension reads the token that quarksUp keeps in its own tab and gives
+it to quarksCharm only. You do not paste anything, and quarksCharm renews
+the token before it expires.
+
+1. Clone this repository.
+2. Open `chrome://extensions`, turn on "Developer mode", press "Load
+   unpacked" and pick the `extension/` folder.
+3. Sign in to quarksUp once in this browser.
+4. Open quarksCharm, type your tenant (the part before `.quarksup.net`),
+   leave the token empty and press Connect.
+
+When no quarksUp tab is open, the extension opens one in the background
+and closes it when it has the token. If quarksUp asks you to sign in, the
+tab stays open: sign in and press Connect again.
+
+The extension asks for access to `*.quarksup.net` only. It keeps the token
+in memory, never on disk, and answers `quarkscharm.vercel.app` only. For
+local development, `bun run extension:dev` builds `extension-dev/`, a copy
+that also answers `localhost:3000`; load it instead of `extension/`.
+
+### With a pasted token
+
 1. Open quarksUp in your browser and sign in.
 2. Press F12 to open the developer tools and pick the Network tab.
 3. Click any request to `api.quarksup.net` and copy the value of its

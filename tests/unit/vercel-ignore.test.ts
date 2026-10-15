@@ -14,6 +14,11 @@ describe('shouldBuild', () => {
     expect(shouldBuild({ previousSha: 'abc', changedFiles })).toBe(false);
   });
 
+  test('skips when only the extension changed', () => {
+    const changedFiles = ['extension/core.js', 'docs/quarksup-api.md'];
+    expect(shouldBuild({ previousSha: 'abc', changedFiles })).toBe(false);
+  });
+
   test('builds when one changed file is outside those folders', () => {
     const changedFiles = ['docs/quarksup-api.md', 'app/pages/index.vue'];
     expect(shouldBuild({ previousSha: 'abc', changedFiles })).toBe(true);
