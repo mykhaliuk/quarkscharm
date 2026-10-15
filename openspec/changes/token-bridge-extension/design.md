@@ -45,15 +45,25 @@ Chrome then warns that the extension can read all the data of the site.
 The owner chose the content script (2026-10-15).
 
 ### D2. Talk to quarksCharm through `externally_connectable`
-The manifest lists `https://quarkscharm.vercel.app/*` and
-`http://localhost:3000/*` in `externally_connectable.matches`. The page
-calls `chrome.runtime.sendMessage(EXTENSION_ID, { type: 'token',
-tenant })`. Chrome delivers messages from these origins only; the service
-worker also checks `sender.origin` against the same list.
+The manifest lists only `https://quarkscharm.vercel.app/*` in
+`externally_connectable.matches`. The page calls
+`chrome.runtime.sendMessage(EXTENSION_ID, { type: 'token', tenant })`.
+Chrome delivers messages from these origins only; the service worker also
+checks `sender.origin` against the list it reads from its own manifest.
+
+For development, `bun run extension:dev` copies `extension/` to the
+ignored folder `extension-dev/` and adds `http://localhost:3000/*` to the
+copy. The copy has the same key, thus the same id. The developer loads
+the copy instead of the normal extension while testing.
 
 Rejected: `window.postMessage` with a second content script on the
 quarksCharm page. Any script on the page could listen to the answer, and
 the extension would have to check origins itself.
+
+Rejected: `http://localhost:3000` in the shipped manifest. Every local
+project on port 3000 of the user, and all its dependencies, could then
+read the quarksUp token. An automated security review flagged it on
+2026-10-15. The choice of the dev port stays open (see Open Questions).
 
 ### D3. A fixed extension id through the manifest `key`
 An unpacked extension gets an id from its folder path, so each user would
@@ -122,9 +132,9 @@ present.
 - [quarksUp renames its storage keys] → The bridge gives nothing, the
   app falls back to the paste. The content script logs one warning per
   page.
-- [A local app on port 3000 can ask the extension for the token] →
-  Accepted for development; the token is the user's own and lives one
-  hour. The service worker checks the origin on each message.
+- [While the dev copy is installed, any local app on port 3000 can ask it
+  for the token] → Only the developer installs the dev copy, and only
+  while testing; the shipped extension answers production only.
 - [The background tab shows up in the tab strip for a few seconds] →
   Accepted; it is inactive and closes itself.
 - [The extension id is public] → Not a secret; Chrome still accepts
@@ -137,3 +147,10 @@ present.
   `chrome://extensions` (README steps).
 - Rollback: remove the extension; the app goes back to the paste. The
   app part reverts with the merge commit.
+
+## Open Questions
+
+- The dev copy uses port 3000, which other local projects also use. The
+  owner wants to debug on 3000 first and choose a rarer dev port later
+  (2026-10-15). A port change touches `nuxt.config.ts`, the Playwright
+  config and `DEV_ORIGINS` only.

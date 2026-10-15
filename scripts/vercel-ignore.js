@@ -2,15 +2,15 @@
 // Exit code: 0 = SKIP the build, 1 = proceed with the build.
 import { execFileSync } from 'node:child_process';
 
-const DOC_ONLY_PREFIXES = ['openspec/', 'docs/'];
+const NOT_APP_PREFIXES = ['openspec/', 'docs/', 'extension/'];
 
-const isDocOnly = (file) =>
-  DOC_ONLY_PREFIXES.some((prefix) => file.startsWith(prefix));
+const isNotApp = (file) =>
+  NOT_APP_PREFIXES.some((prefix) => file.startsWith(prefix));
 
 export const shouldBuild = ({ previousSha, changedFiles }) => {
   if (previousSha === '') return true;
   if (changedFiles.length === 0) return true;
-  return !changedFiles.every(isDocOnly);
+  return !changedFiles.every(isNotApp);
 };
 
 const listChangedFiles = (previousSha, sha) => {
@@ -34,7 +34,7 @@ const main = () => {
   console.log(
     build
       ? `vercel-ignore: building (${changedFiles.length} changed files)`
-      : 'vercel-ignore: skipping, only openspec/ or docs/ changed',
+      : 'vercel-ignore: skipping, only openspec/, docs/ or extension/ changed',
   );
   process.exit(build ? 1 : 0);
 };

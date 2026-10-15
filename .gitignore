@@ -13,6 +13,7 @@ logs
 .DS_Store
 .idea
 tmp
+extension-dev
 
 # OpenSpec commands and skills are generated but committed; the global
 # gitignore hides .claude/ so the folder is re-included here on purpose.

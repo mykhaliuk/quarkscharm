@@ -11,7 +11,7 @@
     "dev": "nuxt dev",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
-    "lint": "oxlint app server shared scripts tests e2e *.config.ts",
+    "lint": "oxlint app server shared scripts tests e2e extension *.config.ts",
     "fmt": "oxfmt .",
     "fmt:check": "oxfmt --check .",
     "typecheck": "nuxt typecheck",
@@ -23,7 +23,8 @@
     "check": "bun run lint && bun run fmt:check && bun run typecheck && bun run test:unit && bun run ds:check && bun run spec:check",
     "ds:sync": "node scripts/ds-sync.js",
     "ds:check": "node scripts/ds-check.js",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "extension:dev": "node scripts/extension-dev.js"
   },
   "dependencies": {
     "nuxt": "^4.6.1",

@@ -1,0 +1,27 @@
+{
+  "manifest_version": 3,
+  "name": "quarksCharm token bridge",
+  "version": "0.1.0",
+  "description": "Gives the quarksUp token of this browser to quarksCharm, and to no other site.",
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAmb0C5mFRuxi3OvZC41wA+j9U3k/vjh+pEgQfKQXpGuvOcLW3zltoXDUfebqloxSlhOsxzKFaWlX7PcQh4fhyRGvzk4+rd/LgLc2nLLHSYdL5F292Cr4Hq8qI52RsFBRVsd6+C73CJZlpJ0JSvBlgUrviUjGZW+0Mp+YvHFAUpV5V7Gue9gx1I50tAEMtcdm9iK94Tk6mhy18oF/DJXo7v5pNh/Mib5EGnChGTSJmiZxse6od6DVkYANrYK0Zd/0KW4xsjecyxGhmCmsm0Qx0gNx0cfsyIkaj9rRUbZ0Xb2uhatZfEEB5arMaUG0EZXDLQC9K/la0fKGze/FPXPuTuwIDAQAB",
+  "permissions": ["storage"],
+  "host_permissions": ["https://*.quarksup.net/*"],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://*.quarksup.net/*"],
+      "exclude_matches": [
+        "https://login.quarksup.net/*",
+        "https://api.quarksup.net/*"
+      ],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "externally_connectable": {
+    "matches": ["https://quarkscharm.vercel.app/*"]
+  }
+}

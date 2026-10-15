@@ -26,8 +26,10 @@ latest token per tenant in memory only, never on disk.
 - **THEN** the extension holds no token until a quarksUp tab gives one
 
 ### Requirement: Answer quarksCharm only
-The extension SHALL answer a token request only from the pages of
-quarksCharm (production and local development). It SHALL give a token
+The extension SHALL answer a token request only from the production pages
+of quarksCharm. Only a development copy, built on purpose and not
+shipped, SHALL also answer the local development server. It SHALL give a
+token
 only for the tenant named in the request, and only when the token is
 valid for at least two more minutes. Pages of other origins SHALL get no
 answer.
