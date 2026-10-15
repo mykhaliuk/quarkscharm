@@ -8,16 +8,47 @@ const tenant = ref(session.state.tenant);
 const token = ref('');
 const error = ref<string | null>(null);
 const busy = ref(false);
+const askingBridge = ref(false);
 
 const MESSAGES = {
   malformed:
     'This is not a quarksUp token. Paste the value of the authorization header.',
   rejected: 'Token rejected. Paste a fresh one from the authorization header.',
   unavailable: 'quarksUp did not answer. Try again in a moment.',
+  absent:
+    'Paste a token. The token bridge extension is not installed in this browser.',
+  login:
+    'quarksUp asks you to sign in. Finish the login in the quarksUp tab, then press Connect.',
+  timeout:
+    'The extension got no token in time. Press Connect again or paste a token.',
+  failed: 'The extension did not give a token. Paste a token.',
 } as const;
+
+const connectWithBridge = async (silentWhenAbsent: boolean) => {
+  error.value = null;
+  busy.value = true;
+  askingBridge.value = true;
+  const result = await session.connectWithBridge(tenant.value.trim());
+  askingBridge.value = false;
+  busy.value = false;
+  if (result.ok) {
+    await navigateTo('/');
+    return;
+  }
+  if (silentWhenAbsent && result.reason === 'absent') return;
+  error.value = MESSAGES[result.reason];
+};
+
+onMounted(() => {
+  if (tenant.value.trim() !== '') void connectWithBridge(true);
+});
 
 const submit = async () => {
   error.value = null;
+  if (token.value.trim() === '') {
+    await connectWithBridge(false);
+    return;
+  }
   if (normalizeToken(token.value) === null) {
     error.value = MESSAGES.malformed;
     return;
@@ -64,13 +95,22 @@ const submit = async () => {
           rows="5"
           spellcheck="false"
           placeholder="eyJ…"
-          required
         ></textarea>
       </label>
       <p class="caption">
-        Open quarksUp, press F12, open the Network tab and pick any request to
-        api.quarksup.net. Copy the value of its <code>authorization</code>
-        header. The token lives one hour; paste a new one when it expires.
+        With the quarksCharm token bridge extension, leave the token empty and
+        press Connect. Without it: open quarksUp, press F12, open the Network
+        tab and pick any request to api.quarksup.net. Copy the value of its
+        <code>authorization</code> header. The token lives one hour; paste a new
+        one when it expires.
+      </p>
+      <p
+        v-if="askingBridge"
+        class="caption"
+        role="status"
+        data-testid="bridge-status"
+      >
+        Getting the token from the extension…
       </p>
       <p v-if="error" class="error body" role="alert">{{ error }}</p>
       <button type="submit" class="primary label" :disabled="busy">

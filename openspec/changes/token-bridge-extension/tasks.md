@@ -8,12 +8,12 @@
 
 ## 2. App client and session
 
-- [ ] 2.1 `app/utils/token-bridge.ts`: `requestBridgeToken(tenant)` with the results of D7 and a 35 s limit; the extension id constant. Check: unit tests with a fake `chrome.runtime` for each result kind.
-- [ ] 2.2 `app/utils/session.ts`: dependency `getBridgeToken`, `connectWithBridge()`, the status `renewing` on 401, the renewal timer two minutes before expiry and the check on `visibilitychange`. `app/composables/useSession.ts` wires the client. Check: unit tests for a 401 solved by the bridge, a 401 that ends in the prompt, a silent renewal and a failed renewal (fake timers).
+- [x] 2.1 `app/utils/token-bridge.ts`: `requestBridgeToken(tenant)` with the results of D7 and a 35 s limit; the extension id constant. Check: unit tests with a fake `chrome.runtime` for each result kind.
+- [x] 2.2 `app/utils/session.ts`: dependency `getBridgeToken`, `connectWithBridge()`, the status `renewing` on 401, the renewal timer two minutes before expiry and the check on `visibilitychange`. `app/composables/useSession.ts` wires the client. Check: unit tests for a 401 solved by the bridge, a 401 that ends in the prompt, a silent renewal and a failed renewal (fake timers).
 
 ## 3. Screens
 
-- [ ] 3.1 `app/pages/connect.vue`: try the extension on mount when a tenant is stored, and on Connect with an empty token field; messages for `login` and `timeout`. `app/components/TokenPrompt.vue`: closed while `renewing`. Check: Playwright with a stub of `chrome.runtime` added by `addInitScript`: connect without a paste, a 401 without a prompt, and the paste flow without the stub.
+- [x] 3.1 `app/pages/connect.vue`: try the extension on mount when a tenant is stored, and on Connect with an empty token field; messages for `login` and `timeout`. `app/components/TokenPrompt.vue`: closed while `renewing`. Check: Playwright with a stub of `chrome.runtime` added by `addInitScript`: connect without a paste, a 401 without a prompt, and the paste flow without the stub.
 - [ ] 3.2 README: install steps for the extension and what it reads. Check: the steps load the extension on a clean Chrome profile.
 
 ## 4. Gate
