@@ -87,6 +87,8 @@ export const createBridge = ({ storage, tabs, now, sleep, log }) => {
     const deadline = now() + FETCH_TIMEOUT_MS;
     try {
       while (now() < deadline) {
+        const token = await tabs.askTab(tabId);
+        if (token !== null) await onReport({ tenant, token });
         const entry = await held(tenant);
         if (entry !== null) {
           await tabs.close(tabId);

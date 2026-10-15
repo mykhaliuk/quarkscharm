@@ -29,6 +29,7 @@ const build = () => {
   const opened: string[] = [];
   const closed: number[] = [];
   const openTabs = new Map<number, string | null>();
+  const newTabTokens = new Map<number, (nowMs: number) => string | null>();
   let onOpen: (tabId: number) => void = ignoreTab;
   const bridge = createBridge({
     storage: {
@@ -39,7 +40,8 @@ const build = () => {
     },
     tabs: {
       findTenantTabs: async () => [...openTabs.keys()],
-      askTab: async (tabId: number) => openTabs.get(tabId) ?? null,
+      askTab: async (tabId: number) =>
+        openTabs.get(tabId) ?? newTabTokens.get(tabId)?.(clock) ?? null,
       open: async (url: string) => {
         opened.push(url);
         const tabId = 100 + opened.length;
@@ -62,6 +64,7 @@ const build = () => {
     opened,
     closed,
     openTabs,
+    newTabTokens,
     advance: (ms: number) => {
       clock += ms;
     },
@@ -136,6 +139,21 @@ describe('bridge', () => {
       token: fresh,
     });
     expect(opened).toEqual(['https://fulll.quarksup.net/']);
+    expect(closed).toEqual([101]);
+  });
+
+  test('reads the opened tab while it waits, without a push from the tab', async () => {
+    const { bridge, closed, newTabTokens, whenOpened } = build();
+    const fresh = jwt(START + 60 * MINUTE);
+    whenOpened((tabId) => {
+      newTabTokens.set(tabId, (nowMs) =>
+        nowMs >= START + 5000 ? fresh : null,
+      );
+    });
+    expect(await bridge.onRequest('fulll')).toMatchObject({
+      kind: 'token',
+      token: fresh,
+    });
     expect(closed).toEqual([101]);
   });
 
