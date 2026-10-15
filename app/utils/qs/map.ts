@@ -53,7 +53,7 @@ export type Colleague = {
   slots: Map<string, Slot>;
 };
 
-export type NatureOfPeriod = (periodId: number) => number | null;
+export type NatureOfSegment = (segment: RawSegment) => number | null;
 
 export type PreviewSegment = {
   beginDate: string;
@@ -147,7 +147,7 @@ const avatarOf = (employee: RawEmployee): string | null =>
 
 export const toColleague = (
   raw: RawPlannerEmployee,
-  natureOfPeriod: NatureOfPeriod,
+  natureOf: NatureOfSegment,
 ): Colleague => ({
   employeeId: raw.id,
   name: fullName(raw),
@@ -158,23 +158,13 @@ export const toColleague = (
     (raw.absences ?? []).map((absence) => ({
       id: absence.id,
       segments: absence.segments.map((segment) => ({
-        natureId: natureOfSegment(segment, natureOfPeriod),
+        natureId: natureOf(segment),
         beginDate: segment.beginDate,
         endDate: segment.endDate,
       })),
     })),
   ),
 });
-
-function natureOfSegment(
-  segment: RawSegment,
-  natureOfPeriod: NatureOfPeriod,
-): number | null {
-  const natureId = segment.natureId ?? null;
-  if (natureId !== null) return natureId;
-  const periodId = segment.periodId ?? null;
-  return periodId === null ? null : natureOfPeriod(periodId);
-}
 
 const toText = (value: unknown): string | null => {
   if (typeof value === 'string') return value;

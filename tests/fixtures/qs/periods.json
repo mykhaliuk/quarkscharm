@@ -1,0 +1,27 @@
+{
+  "reference": "AbsencePeriod",
+  "label": "Périodes d'absence",
+  "items": [
+    {
+      "id": 38,
+      "reference": "2026-2027",
+      "label": "2026-2027",
+      "natureId": 14,
+      "isActive": true
+    },
+    {
+      "id": 42,
+      "reference": "2026",
+      "label": "2026",
+      "natureId": 17,
+      "isActive": true
+    },
+    {
+      "id": 47,
+      "reference": "2026",
+      "label": "2026",
+      "natureId": 55,
+      "isActive": true
+    }
+  ]
+}

@@ -1,9 +1,35 @@
 <script setup lang="ts">
+import { computed } from 'vue';
 import { formatDay } from '~/utils/format';
+import { today } from '~~/shared/utils/ymd';
 
 const whosOff = useWhosOff();
 const cursor = useCursor();
 const natures = useNatures();
+const session = useSession();
+
+const isToday = computed(
+  () =>
+    whosOff.focusDate.value ===
+    today(session.state.me?.timeZone ?? 'Europe/Paris'),
+);
+const sections = computed(() => {
+  const suffix = isToday.value ? ' today' : '';
+  return [
+    {
+      key: 'remote',
+      title: `On remote${suffix}`,
+      people: whosOff.remote.value,
+      showsNature: false,
+    },
+    {
+      key: 'away',
+      title: `Off${suffix}`,
+      people: whosOff.away.value,
+      showsNature: true,
+    },
+  ];
+});
 
 const initials = (name: string) =>
   name
@@ -36,52 +62,74 @@ const initials = (name: string) =>
     <p v-else-if="whosOff.focused.value.length === 0" class="caption muted">
       Everyone is in
     </p>
-    <div
-      v-for="person in whosOff.focused.value"
-      :key="person.employeeId"
-      class="person"
-      data-testid="person"
-    >
-      <img
-        v-if="person.avatarUrl"
-        class="avatar"
-        :src="person.avatarUrl"
-        :alt="person.name"
-      />
-      <span v-else class="avatar initials">{{ initials(person.name) }}</span>
-      <div class="meta">
-        <b>{{ person.name }}</b>
-        <span class="caption">{{
-          [person.entity, person.job].filter(Boolean).join(' · ')
-        }}</span>
-        <span
-          v-if="person.natureId !== null"
-          class="nature caption"
-          data-testid="nature"
-        >
-          <span
-            class="sw"
-            :style="`background: var(${natures.colorToken(person.natureId)})`"
-          ></span>
-          {{ natures.label(person.natureId) }}
-        </span>
-      </div>
-      <span
-        v-if="!(person.am && person.pm)"
-        class="mark caption"
-        data-testid="mark"
+    <template v-else>
+      <section
+        v-for="section in sections"
+        :key="section.key"
+        class="section"
+        :data-testid="`whos-off-${section.key}`"
       >
-        {{ person.am ? 'am' : 'pm' }}
-      </span>
-    </div>
+        <h3 class="label section-title">
+          {{ section.title }}
+          <span class="caption count">{{ section.people.length }}</span>
+        </h3>
+        <div class="list">
+          <p v-if="section.people.length === 0" class="caption muted">Nobody</p>
+          <div
+            v-for="person in section.people"
+            :key="person.employeeId"
+            class="person"
+            data-testid="person"
+          >
+            <img
+              v-if="person.avatarUrl"
+              class="avatar"
+              :src="person.avatarUrl"
+              :alt="person.name"
+            />
+            <span v-else class="avatar initials">{{
+              initials(person.name)
+            }}</span>
+            <div class="meta">
+              <b>{{ person.name }}</b>
+              <span class="caption">{{
+                [person.entity, person.job].filter(Boolean).join(' · ')
+              }}</span>
+              <span
+                v-if="section.showsNature"
+                class="nature caption"
+                data-testid="nature"
+              >
+                <span
+                  class="sw"
+                  :style="`background: var(${natures.colorToken(person.natureId)})`"
+                ></span>
+                {{ natures.label(person.natureId) }}
+              </span>
+            </div>
+            <span
+              v-if="!(person.am && person.pm)"
+              class="mark caption"
+              data-testid="mark"
+            >
+              {{ person.am ? 'am' : 'pm' }}
+            </span>
+          </div>
+        </div>
+      </section>
+    </template>
   </aside>
 </template>
 
 <style scoped>
 .column {
-  display: grid;
+  position: sticky;
+  top: var(--space-4);
+  display: flex;
+  flex-direction: column;
   gap: var(--space-2);
-  align-content: start;
+  max-height: calc(100dvh - 2 * var(--space-4));
+  min-height: 0;
   padding: var(--space-4);
   background: var(--surface);
   border-radius: var(--radius-card);
@@ -106,6 +154,28 @@ h2 {
   padding: 4px var(--space-2);
   border-radius: 6px;
   background: var(--warn-soft);
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  flex: 0 1 auto;
+  min-height: 0;
+}
+
+.section-title {
+  display: flex;
+  justify-content: space-between;
+  margin: var(--space-2) 0 var(--space-1);
+}
+
+.count {
+  color: var(--ink-2);
+}
+
+.list {
+  min-height: 0;
+  overflow-y: auto;
 }
 
 .person {

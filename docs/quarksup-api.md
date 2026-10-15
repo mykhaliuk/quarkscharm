@@ -109,9 +109,12 @@ per service (TECH 42, PRODUIT 39, FINANCE 37, RH 41, RELATION CLIENT 40,
 MARKETING 38, COMMERCE 36, plus one unlabelled). On 2026-10-15 each employee
 has `entity { id, label }` at the root and no `position`. Segments in this view have
 no `natureId` key for other people (privacy), `validated` boolean. A segment of a
-paid leave also has `periodId`. The period belongs to one nature, so the
-user's own `entitlements` (`period.id`, `period.natureId`) give the nature
-for the periods of the user's agreement. `GET /times/v3/periods` returns 403
+paid leave also has `periodId`. The period belongs to one nature.
+`GET service-<tenant>.../api/v2/organization/metadata/absencePeriod?includeInactive=true`
+gives all periods of the tenant (`{ items: [ { id, label, natureId, dateBegin,
+dateEnd, conventionId, … } ] }`, 24 items) for the Employee role. A segment
+without a period has no nature at all: remote work, sick leave, unpaid
+leave and maternity leave look the same. `GET /times/v3/periods` returns 403
 for the Employee role.
 
 ### entitlements

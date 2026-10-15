@@ -30,6 +30,11 @@ const DEFAULT_RULES: Rule[] = [
   },
   {
     method: 'GET',
+    pattern: /\/org\/organization\/metadata\/absencePeriod$/,
+    answer: ok('periods'),
+  },
+  {
+    method: 'GET',
     pattern: /\/org\/organization\/metadata\/absenceStatus$/,
     answer: ok('statuses'),
   },

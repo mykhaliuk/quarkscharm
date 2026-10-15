@@ -9,6 +9,7 @@ import type {
   RawItemSet,
   RawMe,
   RawNature,
+  RawPeriod,
   RawPlannerEmployee,
   RawPlannerService,
   RawPreview,
@@ -44,6 +45,14 @@ export const getNatures = async (): Promise<RawNature[]> =>
   items(
     await qsFetch<RawItemSet<RawNature> | RawNature[]>(
       'org/organization/metadata/absenceNature',
+      { query: { includeInactive: 'true', ...LOCALE } },
+    ),
+  );
+
+export const getPeriods = async (): Promise<RawPeriod[]> =>
+  items(
+    await qsFetch<RawItemSet<RawPeriod> | RawPeriod[]>(
+      'org/organization/metadata/absencePeriod',
       { query: { includeInactive: 'true', ...LOCALE } },
     ),
   );

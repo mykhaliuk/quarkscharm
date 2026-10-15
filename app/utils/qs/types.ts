@@ -39,6 +39,14 @@ export type RawNature = {
   plannerCode?: string;
 };
 
+export type RawPeriod = {
+  id: number;
+  natureId: number;
+  reference?: string;
+  label?: string;
+  isActive?: boolean;
+};
+
 export type RawStatus = { id: number; reference?: string; label: string };
 
 export type RawItemSet<T> = { reference?: string; label?: string; items: T[] };

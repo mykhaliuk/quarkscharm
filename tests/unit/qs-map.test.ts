@@ -76,16 +76,9 @@ describe('toEntitlement', () => {
   });
 });
 
-const NATURE_OF_PERIOD: Record<number, number> = { 38: 14 };
-const natureOfPeriod = (periodId: number): number | null =>
-  NATURE_OF_PERIOD[periodId] ?? null;
-
 describe('toColleague', () => {
-  test('an unknown period gives a null nature', () => {
-    const colleague = toColleague(
-      plannerService[0]!.employees[2]!,
-      natureOfPeriod,
-    );
+  test('maps a planner employee with half-day slots', () => {
+    const colleague = toColleague(plannerService[0]!.employees[2]!, () => null);
     expect(colleague).toMatchObject({
       employeeId: 9003,
       name: 'Cyr Demo',
@@ -99,10 +92,9 @@ describe('toColleague', () => {
     });
   });
 
-  test('uses the full picture url as avatar, not the small thumbnail', () => {
-    const colleague = toColleague(
-      plannerService[0]!.employees[1]!,
-      natureOfPeriod,
+  test('takes the nature of each segment from the lookup', () => {
+    const colleague = toColleague(plannerService[0]!.employees[1]!, (s) =>
+      s.periodId === 38 ? 14 : null,
     );
     expect(colleague.entity).toBe('TECH');
     expect(colleague.avatarUrl).toBe('https://cdn.example.test/p/9002.png');
@@ -110,14 +102,6 @@ describe('toColleague', () => {
       am: { natureId: 14, requestId: 7001 },
       pm: { natureId: 14, requestId: 7001 },
     });
-  });
-
-  test('a segment without a period keeps its own nature or null', () => {
-    const raw = plannerService[0]!.employees[0]!;
-    const colleague = toColleague(raw, () => {
-      throw new Error('no period to look up');
-    });
-    expect(colleague.slots.get('2026-10-22')?.am?.natureId).toBe(75);
   });
 });
 
