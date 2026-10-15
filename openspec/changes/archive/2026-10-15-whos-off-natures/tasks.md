@@ -13,4 +13,4 @@
 
 ## 4. Gate
 
-- [ ] 4.1 `bun run check` and `bunx playwright test` green; the owner confirms on localhost.
+- [x] 4.1 `bun run check` and `bunx playwright test` green; the owner confirms on localhost.
