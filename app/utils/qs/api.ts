@@ -4,11 +4,13 @@ import { qsFetch } from './fetch';
 import type {
   RawCancelAnswer,
   RawCreateEnvelope,
+  RawDirectoryPerson,
   RawEntitlement,
   RawHolidays,
   RawItemSet,
   RawMe,
   RawNature,
+  RawPeriod,
   RawPlannerEmployee,
   RawPlannerService,
   RawPreview,
@@ -47,6 +49,19 @@ export const getNatures = async (): Promise<RawNature[]> =>
       { query: { includeInactive: 'true', ...LOCALE } },
     ),
   );
+
+export const getPeriods = async (): Promise<RawPeriod[]> =>
+  items(
+    await qsFetch<RawItemSet<RawPeriod> | RawPeriod[]>(
+      'org/organization/metadata/absencePeriod',
+      { query: { includeInactive: 'true', ...LOCALE } },
+    ),
+  );
+
+export const getFavorites = () =>
+  qsFetch<RawDirectoryPerson[]>('org/people/directories', {
+    query: { pinned: 'true', top: 500, skip: 0, ...LOCALE },
+  });
 
 export const getStatuses = async (): Promise<RawStatus[]> =>
   items(

@@ -1,8 +1,49 @@
 <script setup lang="ts">
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 import { formatDay } from '~/utils/format';
+import { today } from '~~/shared/utils/ymd';
 
 const whosOff = useWhosOff();
 const cursor = useCursor();
+const natures = useNatures();
+const session = useSession();
+
+const isToday = computed(
+  () =>
+    whosOff.focusDate.value ===
+    today(session.state.me?.timeZone ?? 'Europe/Paris'),
+);
+const sections = computed(() => {
+  const suffix = isToday.value ? ' today' : '';
+  return [
+    {
+      key: 'remote',
+      title: `On remote${suffix}`,
+      people: whosOff.remote.value,
+      showsNature: false,
+    },
+    {
+      key: 'away',
+      title: `Off${suffix}`,
+      people: whosOff.away.value,
+      showsNature: true,
+    },
+  ];
+});
+
+const column = ref<HTMLElement | null>(null);
+const columnTop = ref(0);
+const measure = () => {
+  if (column.value === null) return;
+  columnTop.value = column.value.getBoundingClientRect().top + window.scrollY;
+};
+let observer: ResizeObserver | null = null;
+onMounted(() => {
+  observer = new ResizeObserver(measure);
+  observer.observe(document.body);
+  measure();
+});
+onBeforeUnmount(() => observer?.disconnect());
 
 const initials = (name: string) =>
   name
@@ -13,7 +54,12 @@ const initials = (name: string) =>
 </script>
 
 <template>
-  <aside class="column" data-testid="whos-off">
+  <aside
+    ref="column"
+    class="column"
+    :style="`--column-top: ${columnTop}px`"
+    data-testid="whos-off"
+  >
     <h2 class="title">
       Who is off
       <button type="button" class="btn label" @click="cursor.today">
@@ -24,52 +70,90 @@ const initials = (name: string) =>
       {{ formatDay(whosOff.focusDate.value) }}
     </div>
     <p v-if="whosOff.status.value === 'failed'" class="caption note">
-      The service planner did not load.
+      The favorites or the planner did not load.
       <button type="button" class="btn label" @click="whosOff.load">
         Retry
       </button>
     </p>
-    <p v-else-if="whosOff.status.value === 'loading'" class="caption muted">
+    <p v-else-if="whosOff.status.value !== 'ready'" class="caption muted">
       Loading…
     </p>
-    <p v-else-if="whosOff.focused.value.length === 0" class="caption muted">
-      Everyone is in
-    </p>
-    <div
-      v-for="person in whosOff.focused.value"
-      :key="person.employeeId"
-      class="person"
-      data-testid="person"
+    <p
+      v-else-if="!whosOff.hasFavorites.value"
+      class="caption muted"
+      data-testid="no-favorites"
     >
-      <img
-        v-if="person.avatarUrl"
-        class="avatar"
-        :src="person.avatarUrl"
-        :alt="person.name"
-      />
-      <span v-else class="avatar initials">{{ initials(person.name) }}</span>
-      <div class="meta">
-        <b>{{ person.name }}</b>
-        <span class="caption">{{
-          [person.entity, person.job].filter(Boolean).join(' · ')
-        }}</span>
-      </div>
-      <span
-        v-if="!(person.am && person.pm)"
-        class="mark caption"
-        data-testid="mark"
+      No favorites yet. Pin people in the quarksUp directory to see them here.
+    </p>
+    <p v-else-if="whosOff.focused.value.length === 0" class="caption muted">
+      All your favorites are in
+    </p>
+    <template v-else>
+      <section
+        v-for="section in sections"
+        :key="section.key"
+        class="section"
+        :data-testid="`whos-off-${section.key}`"
       >
-        {{ person.am ? 'am' : 'pm' }}
-      </span>
-    </div>
+        <h3 class="label section-title">
+          {{ section.title }}
+          <span class="caption count">{{ section.people.length }}</span>
+        </h3>
+        <div class="list">
+          <p v-if="section.people.length === 0" class="caption muted">Nobody</p>
+          <div
+            v-for="person in section.people"
+            :key="person.employeeId"
+            class="person"
+            data-testid="person"
+          >
+            <img
+              v-if="person.avatarUrl"
+              class="avatar"
+              :src="person.avatarUrl"
+              :alt="person.name"
+            />
+            <span v-else class="avatar initials">{{
+              initials(person.name)
+            }}</span>
+            <div class="meta">
+              <b>{{ person.name }}</b>
+              <span class="caption">{{
+                [person.entity, person.job].filter(Boolean).join(' · ')
+              }}</span>
+              <span
+                v-if="section.showsNature"
+                class="nature caption"
+                data-testid="nature"
+              >
+                <span
+                  class="sw"
+                  :style="`background: var(${natures.colorToken(person.natureId)})`"
+                ></span>
+                {{ natures.label(person.natureId) }}
+              </span>
+            </div>
+            <span
+              v-if="!(person.am && person.pm)"
+              class="mark caption"
+              data-testid="mark"
+            >
+              {{ person.am ? 'am' : 'pm' }}
+            </span>
+          </div>
+        </div>
+      </section>
+    </template>
   </aside>
 </template>
 
 <style scoped>
 .column {
   display: grid;
-  gap: var(--space-2);
+  grid-template-rows: auto auto minmax(0, auto) minmax(0, auto);
   align-content: start;
+  gap: var(--space-2);
+  height: calc(100dvh - var(--column-top) - var(--space-4));
   padding: var(--space-4);
   background: var(--surface);
   border-radius: var(--radius-card);
@@ -96,6 +180,29 @@ h2 {
   background: var(--warn-soft);
 }
 
+.section {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  min-height: 0;
+}
+
+.section-title {
+  display: flex;
+  justify-content: space-between;
+  margin: var(--space-2) 0 var(--space-1);
+}
+
+.count {
+  color: var(--ink-2);
+}
+
+.list {
+  min-height: 0;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--hairline-2) transparent;
+}
+
 .person {
   display: flex;
   align-items: center;
@@ -105,6 +212,7 @@ h2 {
 }
 
 .avatar {
+  flex: none;
   width: 24px;
   height: 24px;
   border-radius: var(--radius-pill);
@@ -126,6 +234,20 @@ h2 {
 
 .meta .caption {
   color: var(--ink-2);
+}
+
+.nature {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--ink-2);
+}
+
+.sw {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  box-shadow: inset 0 0 0 1px var(--hairline-2);
 }
 
 .mark {

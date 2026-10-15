@@ -39,6 +39,21 @@ export type RawNature = {
   plannerCode?: string;
 };
 
+export type RawPeriod = {
+  id: number;
+  natureId: number;
+  reference?: string;
+  label?: string;
+  isActive?: boolean;
+};
+
+export type RawDirectoryPerson = {
+  id: number;
+  firstName?: string;
+  lastName?: string;
+  pinned?: boolean;
+};
+
 export type RawStatus = { id: number; reference?: string; label: string };
 
 export type RawItemSet<T> = { reference?: string; label?: string; items: T[] };
@@ -65,7 +80,8 @@ export type RawSegment = {
   beginDate: string;
   endDate: string;
   duration: number;
-  natureId: number | null;
+  natureId?: number | null;
+  periodId?: number | null;
   validated?: boolean;
 };
 

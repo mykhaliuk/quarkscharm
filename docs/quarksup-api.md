@@ -56,20 +56,21 @@ Factorial's `x-api-user-id`.
 
 ## 4. Endpoint mapping (Factorial → quarksUp)
 
-| Helper need                      | Factorial                             | quarksUp                                                                                                                                                                                       |
-| -------------------------------- | ------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| my leaves                        | `GET /leaves?employee_id&from&to`     | `GET /times/v3/odata/requests?employeeId=<employeeId>&beginDate&endDate&$top=500&$count=true` (max 24 months)                                                                                  |
-| my calendar + non-working days   | —                                     | `GET /times/v3/planners/me?beginDate&endDate` (max 12 months)                                                                                                                                  |
-| create leave                     | `POST /leaves`                        | `POST /times/v3/requests?workflowSequenceId=11281` (see §6)                                                                                                                                    |
-| preview / validate before create | —                                     | `GET /times/v3/requests/preview?employeeId&beginDate&endDate&isSocialSecurity=false&details=Segments,Natures,Warnings`                                                                         |
-| cancel leave                     | `DELETE /leaves/:id`                  | `PUT /times/v3/requests/{id}/workflows/{seq}` with body `{ fields: { comment: null } }`; `seq` comes from `_workflows.CancelRequest.sequenceId` of the request (11283 for status New). See §6c |
-| update leave                     | — (not in old app)                    | `GET /requests/{id}/preview` then `PUT /requests/{id}` with the create body. See §6b                                                                                                           |
-| counters                         | `GET /allowance_stats/...`            | `GET /times/v3/entitlements?employeeId=<employeeId>`                                                                                                                                           |
-| public holidays                  | `GET /company_holidays`               | `GET /times/v3/planners/holidays?beginDate&endDate&countryCode=FR` (max 18 months; also school holidays by zone)                                                                               |
-| who is off (team)                | `GET /calendar_events`                | `GET /times/v3/planners/service?beginDate&endDate&top=500` (max 2 months, all services, 300 employees, 414 KB)                                                                                 |
-| leave types                      | hard-coded ids                        | `GET service-<tenant>.../api/v2/organization/metadata/absenceNature?includeInactive=true`                                                                                                      |
-| statuses                         | `approved` boolean                    | `GET .../metadata/absenceStatus`                                                                                                                                                               |
-| people / avatars                 | `/accesses`, `/employees`, `/rails/*` | employees embedded in planners/service with `picture.url` (presigned); `thumbnails=small` param                                                                                                |
+| Helper need                      | Factorial                             | quarksUp                                                                                                                                                                                                              |
+| -------------------------------- | ------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| my leaves                        | `GET /leaves?employee_id&from&to`     | `GET /times/v3/odata/requests?employeeId=<employeeId>&beginDate&endDate&$top=500&$count=true` (max 24 months)                                                                                                         |
+| my calendar + non-working days   | —                                     | `GET /times/v3/planners/me?beginDate&endDate` (max 12 months)                                                                                                                                                         |
+| create leave                     | `POST /leaves`                        | `POST /times/v3/requests?workflowSequenceId=11281` (see §6)                                                                                                                                                           |
+| preview / validate before create | —                                     | `GET /times/v3/requests/preview?employeeId&beginDate&endDate&isSocialSecurity=false&details=Segments,Natures,Warnings`                                                                                                |
+| cancel leave                     | `DELETE /leaves/:id`                  | `PUT /times/v3/requests/{id}/workflows/{seq}` with body `{ fields: { comment: null } }`; `seq` comes from `_workflows.CancelRequest.sequenceId` of the request (11283 for status New). See §6c                        |
+| update leave                     | — (not in old app)                    | `GET /requests/{id}/preview` then `PUT /requests/{id}` with the create body. See §6b                                                                                                                                  |
+| counters                         | `GET /allowance_stats/...`            | `GET /times/v3/entitlements?employeeId=<employeeId>`                                                                                                                                                                  |
+| public holidays                  | `GET /company_holidays`               | `GET /times/v3/planners/holidays?beginDate&endDate&countryCode=FR` (max 18 months; also school holidays by zone)                                                                                                      |
+| who is off (team)                | `GET /calendar_events`                | `GET /times/v3/planners/service?beginDate&endDate&top=500` (max 2 months, all services, 300 employees, 414 KB)                                                                                                        |
+| leave types                      | hard-coded ids                        | `GET service-<tenant>.../api/v2/organization/metadata/absenceNature?includeInactive=true`                                                                                                                             |
+| statuses                         | `approved` boolean                    | `GET .../metadata/absenceStatus`                                                                                                                                                                                      |
+| favorites                        | —                                     | `GET service-<tenant>.../api/v2/people/directories?pinned=true&top=500&skip=0&locale=fr-FR` (array of directory people with `pinned: true`; `id` is the `employeeId`; without `locale` the API returns `{ Message }`) |
+| people / avatars                 | `/accesses`, `/employees`, `/rails/*` | employees embedded in planners/service with `picture.url` (presigned); `thumbnails=small` param                                                                                                                       |
 
 ## 5. Response shapes (observed)
 
@@ -108,7 +109,14 @@ Array of `{ id, label, employees: [ <same shape as planners/me> ] }`, one item
 per service (TECH 42, PRODUIT 39, FINANCE 37, RH 41, RELATION CLIENT 40,
 MARKETING 38, COMMERCE 36, plus one unlabelled). On 2026-10-15 each employee
 has `entity { id, label }` at the root and no `position`. Segments in this view have
-`natureId: null` for other people (privacy), `validated` boolean.
+no `natureId` key for other people (privacy), `validated` boolean. A segment of a
+paid leave also has `periodId`. The period belongs to one nature.
+`GET service-<tenant>.../api/v2/organization/metadata/absencePeriod?includeInactive=true`
+gives all periods of the tenant (`{ items: [ { id, label, natureId, dateBegin,
+dateEnd, conventionId, … } ] }`, 24 items) for the Employee role. A segment
+without a period has no nature at all: remote work, sick leave, unpaid
+leave and maternity leave look the same. `GET /times/v3/periods` returns 403
+for the Employee role.
 
 ### entitlements
 

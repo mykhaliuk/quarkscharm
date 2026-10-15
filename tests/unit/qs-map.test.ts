@@ -77,8 +77,8 @@ describe('toEntitlement', () => {
 });
 
 describe('toColleague', () => {
-  test('maps a planner employee with half-day slots and a null nature', () => {
-    const colleague = toColleague(plannerService[0]!.employees[2]!);
+  test('maps a planner employee with half-day slots', () => {
+    const colleague = toColleague(plannerService[0]!.employees[2]!, () => null);
     expect(colleague).toMatchObject({
       employeeId: 9003,
       name: 'Cyr Demo',
@@ -92,13 +92,15 @@ describe('toColleague', () => {
     });
   });
 
-  test('uses the full picture url as avatar, not the small thumbnail', () => {
-    const colleague = toColleague(plannerService[0]!.employees[1]!);
+  test('takes the nature of each segment from the lookup', () => {
+    const colleague = toColleague(plannerService[0]!.employees[1]!, (s) =>
+      s.periodId === 38 ? 14 : null,
+    );
     expect(colleague.entity).toBe('TECH');
     expect(colleague.avatarUrl).toBe('https://cdn.example.test/p/9002.png');
     expect(colleague.slots.get('2026-10-12')).toEqual({
-      am: { natureId: null, requestId: 7001 },
-      pm: { natureId: null, requestId: 7001 },
+      am: { natureId: 14, requestId: 7001 },
+      pm: { natureId: 14, requestId: 7001 },
     });
   });
 });
