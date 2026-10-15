@@ -111,16 +111,6 @@ export const createWhosOff = ({
     return segment.duration <= REMOTE_MAX_DAYS ? remoteNatureId() : null;
   };
 
-  const employeesOf = (services: RawPlannerService[]): RawPlannerEmployee[] => {
-    const byId = new Map<number, RawPlannerEmployee>();
-    for (const service of services) {
-      for (const employee of service.employees) {
-        if (!byId.has(employee.id)) byId.set(employee.id, employee);
-      }
-    }
-    return [...byId.values()];
-  };
-
   const colleagues = computed(() => {
     const byMonth = new Map<string, Colleague[]>();
     const pinned = favorites.value;
@@ -208,3 +198,13 @@ export const createWhosOff = ({
 };
 
 export type WhosOffStore = ReturnType<typeof createWhosOff>;
+
+function employeesOf(services: RawPlannerService[]): RawPlannerEmployee[] {
+  const byId = new Map<number, RawPlannerEmployee>();
+  for (const service of services) {
+    for (const employee of service.employees) {
+      if (!byId.has(employee.id)) byId.set(employee.id, employee);
+    }
+  }
+  return [...byId.values()];
+}

@@ -111,7 +111,31 @@ test('a long remote list scrolls inside its section and keeps the off section', 
 
 function crowd(remoteCount: number, awayCount: number) {
   const me = { id: 9001, firstName: 'Alex', lastName: 'Example', absences: [] };
-  const person = (index: number, periodId: number | null) => ({
+  const remote = Array.from({ length: remoteCount }, (_, i) =>
+    crowdPerson(i, null),
+  );
+  const away = Array.from({ length: awayCount }, (_, i) =>
+    crowdPerson(remoteCount + i, 38),
+  );
+  return [me, ...remote, ...away];
+}
+
+test('without favorites the column asks to pin people', async ({ page }) => {
+  await page.clock.setFixedTime(new Date('2026-10-12T09:00:00+02:00'));
+  const qs = await installQsFixtures(page);
+  qs.override('GET', /people\/directories$/, () => ({ status: 200, body: [] }));
+  await page.goto('/connect');
+  await page.getByLabel('Tenant').fill('fulll');
+  await page.getByLabel('Token').fill(buildToken());
+  await page.getByRole('button', { name: 'Connect' }).click();
+  await expect(page.getByTestId('no-favorites')).toBeVisible();
+  const calls = qs.callsTo(/people\/directories$/);
+  expect(calls).toHaveLength(1);
+  expect(calls[0]!.query).toMatchObject({ pinned: 'true' });
+});
+
+function crowdPerson(index: number, periodId: number | null) {
+  return {
     id: 10000 + index,
     firstName: 'Person',
     lastName: `${index}`,
@@ -130,24 +154,5 @@ function crowd(remoteCount: number, awayCount: number) {
         ],
       },
     ],
-  });
-  const remote = Array.from({ length: remoteCount }, (_, i) => person(i, null));
-  const away = Array.from({ length: awayCount }, (_, i) =>
-    person(remoteCount + i, 38),
-  );
-  return [me, ...remote, ...away];
+  };
 }
-
-test('without favorites the column asks to pin people', async ({ page }) => {
-  await page.clock.setFixedTime(new Date('2026-10-12T09:00:00+02:00'));
-  const qs = await installQsFixtures(page);
-  qs.override('GET', /people\/directories$/, () => ({ status: 200, body: [] }));
-  await page.goto('/connect');
-  await page.getByLabel('Tenant').fill('fulll');
-  await page.getByLabel('Token').fill(buildToken());
-  await page.getByRole('button', { name: 'Connect' }).click();
-  await expect(page.getByTestId('no-favorites')).toBeVisible();
-  const calls = qs.callsTo(/people\/directories$/);
-  expect(calls).toHaveLength(1);
-  expect(calls[0]!.query).toMatchObject({ pinned: 'true' });
-});
