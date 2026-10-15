@@ -72,3 +72,61 @@ test('a click with a brush paints the day and focuses it', async ({ page }) => {
     /selected/,
   );
 });
+
+test('a long remote list scrolls inside its section and keeps the off section', async ({
+  page,
+}) => {
+  await page.clock.setFixedTime(new Date('2026-10-12T09:00:00+02:00'));
+  const qs = await installQsFixtures(page);
+  qs.override('GET', /planners\/service$/, () => ({
+    status: 200,
+    body: [{ id: 42, label: 'TECH', employees: crowd(40, 3) }],
+  }));
+  await page.goto('/connect');
+  await page.getByLabel('Tenant').fill('fulll');
+  await page.getByLabel('Token').fill(buildToken());
+  await page.getByRole('button', { name: 'Connect' }).click();
+  const column = page.getByTestId('whos-off');
+  const remote = column.getByTestId('whos-off-remote');
+  const away = column.getByTestId('whos-off-away');
+  await expect(remote.getByTestId('person')).toHaveCount(40);
+  await expect(away.getByTestId('person')).toHaveCount(3);
+  const viewport = page.viewportSize()!.height;
+  const box = (await column.boundingBox())!;
+  expect(box.y + box.height).toBeLessThanOrEqual(viewport);
+  const scrolls = async (section: typeof remote) =>
+    section
+      .locator('.list')
+      .evaluate((list) => list.scrollHeight > list.clientHeight);
+  expect(await scrolls(remote)).toBe(true);
+  expect(await scrolls(away)).toBe(false);
+});
+
+function crowd(remoteCount: number, awayCount: number) {
+  const me = { id: 9001, firstName: 'Alex', lastName: 'Example', absences: [] };
+  const person = (index: number, periodId: number | null) => ({
+    id: 10000 + index,
+    firstName: 'Person',
+    lastName: `${index}`,
+    absences: [
+      {
+        id: 20000 + index,
+        segments: [
+          {
+            id: 30000 + index,
+            beginDate: '2026-10-12T00:00:00.000Z',
+            endDate: '2026-10-12T23:00:00.000Z',
+            duration: 1,
+            periodId,
+            validated: true,
+          },
+        ],
+      },
+    ],
+  });
+  const remote = Array.from({ length: remoteCount }, (_, i) => person(i, null));
+  const away = Array.from({ length: awayCount }, (_, i) =>
+    person(remoteCount + i, 38),
+  );
+  return [me, ...remote, ...away];
+}

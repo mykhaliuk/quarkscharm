@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 import { formatDay } from '~/utils/format';
 import { today } from '~~/shared/utils/ymd';
 
@@ -31,6 +31,20 @@ const sections = computed(() => {
   ];
 });
 
+const column = ref<HTMLElement | null>(null);
+const columnTop = ref(0);
+const measure = () => {
+  if (column.value === null) return;
+  columnTop.value = column.value.getBoundingClientRect().top + window.scrollY;
+};
+let observer: ResizeObserver | null = null;
+onMounted(() => {
+  observer = new ResizeObserver(measure);
+  observer.observe(document.body);
+  measure();
+});
+onBeforeUnmount(() => observer?.disconnect());
+
 const initials = (name: string) =>
   name
     .split(' ')
@@ -40,7 +54,12 @@ const initials = (name: string) =>
 </script>
 
 <template>
-  <aside class="column" data-testid="whos-off">
+  <aside
+    ref="column"
+    class="column"
+    :style="`--column-top: ${columnTop}px`"
+    data-testid="whos-off"
+  >
     <h2 class="title">
       Who is off
       <button type="button" class="btn label" @click="cursor.today">
@@ -123,13 +142,11 @@ const initials = (name: string) =>
 
 <style scoped>
 .column {
-  position: sticky;
-  top: var(--space-4);
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-rows: auto auto minmax(0, auto) minmax(0, auto);
+  align-content: start;
   gap: var(--space-2);
-  max-height: calc(100dvh - 2 * var(--space-4));
-  min-height: 0;
+  height: calc(100dvh - var(--column-top) - var(--space-4));
   padding: var(--space-4);
   background: var(--surface);
   border-radius: var(--radius-card);
@@ -157,9 +174,8 @@ h2 {
 }
 
 .section {
-  display: flex;
-  flex-direction: column;
-  flex: 0 1 auto;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
   min-height: 0;
 }
 
@@ -176,6 +192,8 @@ h2 {
 .list {
   min-height: 0;
   overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--hairline-2) transparent;
 }
 
 .person {
@@ -187,6 +205,7 @@ h2 {
 }
 
 .avatar {
+  flex: none;
   width: 24px;
   height: 24px;
   border-radius: var(--radius-pill);
