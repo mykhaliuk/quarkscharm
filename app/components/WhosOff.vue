@@ -3,6 +3,7 @@ import { formatDay } from '~/utils/format';
 
 const whosOff = useWhosOff();
 const cursor = useCursor();
+const natures = useNatures();
 
 const initials = (name: string) =>
   name
@@ -53,6 +54,17 @@ const initials = (name: string) =>
         <span class="caption">{{
           [person.entity, person.job].filter(Boolean).join(' · ')
         }}</span>
+        <span
+          v-if="person.natureId !== null"
+          class="nature caption"
+          data-testid="nature"
+        >
+          <span
+            class="sw"
+            :style="`background: var(${natures.colorToken(person.natureId)})`"
+          ></span>
+          {{ natures.label(person.natureId) }}
+        </span>
       </div>
       <span
         v-if="!(person.am && person.pm)"
@@ -126,6 +138,20 @@ h2 {
 
 .meta .caption {
   color: var(--ink-2);
+}
+
+.nature {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--ink-2);
+}
+
+.sw {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  box-shadow: inset 0 0 0 1px var(--hairline-2);
 }
 
 .mark {

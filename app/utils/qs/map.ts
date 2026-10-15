@@ -6,6 +6,7 @@ import type {
   RawPlannerEmployee,
   RawPreview,
   RawRequest,
+  RawSegment,
 } from './types';
 
 export type RequestSegment = {
@@ -51,6 +52,8 @@ export type Colleague = {
   avatarUrl: string | null;
   slots: Map<string, Slot>;
 };
+
+export type NatureOfPeriod = (periodId: number) => number | null;
 
 export type PreviewSegment = {
   beginDate: string;
@@ -98,7 +101,7 @@ export const toRequest = (raw: RawRequest): AbsenceRequest => {
     comment: raw.comment ?? null,
     segments: raw.segments.map((segment) => ({
       id: segment.id ?? null,
-      natureId: segment.natureId,
+      natureId: segment.natureId ?? null,
       beginDate: segment.beginDate,
       endDate: segment.endDate,
       duration: segment.duration,
@@ -142,7 +145,10 @@ const avatarOf = (employee: RawEmployee): string | null =>
   employee.picture?.thumbnails?.small ??
   null;
 
-export const toColleague = (raw: RawPlannerEmployee): Colleague => ({
+export const toColleague = (
+  raw: RawPlannerEmployee,
+  natureOfPeriod: NatureOfPeriod,
+): Colleague => ({
   employeeId: raw.id,
   name: fullName(raw),
   entity: raw.entity?.label ?? raw.position?.entity?.label ?? null,
@@ -152,13 +158,23 @@ export const toColleague = (raw: RawPlannerEmployee): Colleague => ({
     (raw.absences ?? []).map((absence) => ({
       id: absence.id,
       segments: absence.segments.map((segment) => ({
-        natureId: segment.natureId,
+        natureId: natureOfSegment(segment, natureOfPeriod),
         beginDate: segment.beginDate,
         endDate: segment.endDate,
       })),
     })),
   ),
 });
+
+function natureOfSegment(
+  segment: RawSegment,
+  natureOfPeriod: NatureOfPeriod,
+): number | null {
+  const natureId = segment.natureId ?? null;
+  if (natureId !== null) return natureId;
+  const periodId = segment.periodId ?? null;
+  return periodId === null ? null : natureOfPeriod(periodId);
+}
 
 const toText = (value: unknown): string | null => {
   if (typeof value === 'string') return value;

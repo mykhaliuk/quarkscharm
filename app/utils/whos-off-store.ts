@@ -1,6 +1,6 @@
 import { computed, ref, watch } from 'vue';
-import { toColleague, type Colleague } from './qs/map';
-import type { RawPlannerService } from './qs/types';
+import { toColleague, type Colleague, type NatureOfPeriod } from './qs/map';
+import type { RawPlannerEmployee, RawPlannerService } from './qs/types';
 import { monthDays } from '~~/shared/utils/ymd';
 
 export type WhosOffStatus = 'idle' | 'loading' | 'ready' | 'failed';
@@ -11,6 +11,7 @@ export type OffEntry = {
   entity: string | null;
   job: string | null;
   avatarUrl: string | null;
+  natureId: number | null;
   am: boolean;
   pm: boolean;
 };
@@ -22,6 +23,7 @@ type Deps = {
   ) => Promise<RawPlannerService[]>;
   employeeId: () => number;
   focusDate: () => string;
+  natureOfPeriod: NatureOfPeriod;
 };
 
 const monthOf = (ymd: string): string => ymd.slice(0, 7);
@@ -30,19 +32,31 @@ export const createWhosOff = ({
   getPlannerService,
   employeeId,
   focusDate,
+  natureOfPeriod,
 }: Deps) => {
-  const months = ref(new Map<string, Colleague[]>());
+  const months = ref(new Map<string, RawPlannerEmployee[]>());
   const status = ref<WhosOffStatus>('idle');
   const pending = new Map<string, Promise<void>>();
 
-  const colleaguesOf = (services: RawPlannerService[]): Colleague[] => {
+  const colleaguesOf = (
+    services: RawPlannerService[],
+  ): RawPlannerEmployee[] => {
     const me = employeeId();
     const mine = services.find((service) =>
       service.employees.some((e) => e.id === me),
     );
     const employees = mine?.employees ?? [];
-    return employees.filter((e) => e.id !== me).map(toColleague);
+    return employees.filter((e) => e.id !== me);
   };
+
+  const colleagues = computed(() => {
+    const byMonth = new Map<string, Colleague[]>();
+    for (const [month, employees] of months.value) {
+      const mapped = employees.map((e) => toColleague(e, natureOfPeriod));
+      byMonth.set(month, mapped);
+    }
+    return byMonth;
+  });
 
   const loadMonth = (month: string): Promise<void> => {
     if (months.value.has(month)) return Promise.resolve();
@@ -72,9 +86,8 @@ export const createWhosOff = ({
   watch(focusDate, (ymd) => void loadMonth(monthOf(ymd)));
 
   const offOn = (ymd: string): OffEntry[] => {
-    const colleagues = months.value.get(monthOf(ymd)) ?? [];
     const entries: OffEntry[] = [];
-    for (const colleague of colleagues) {
+    for (const colleague of colleagues.value.get(monthOf(ymd)) ?? []) {
       const slot = colleague.slots.get(ymd);
       if (!slot || (slot.am === null && slot.pm === null)) continue;
       entries.push({
@@ -83,6 +96,7 @@ export const createWhosOff = ({
         entity: colleague.entity,
         job: colleague.job,
         avatarUrl: colleague.avatarUrl,
+        natureId: (slot.am ?? slot.pm)?.natureId ?? null,
         am: slot.am !== null,
         pm: slot.pm !== null,
       });

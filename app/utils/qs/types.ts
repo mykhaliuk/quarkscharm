@@ -65,7 +65,8 @@ export type RawSegment = {
   beginDate: string;
   endDate: string;
   duration: number;
-  natureId: number | null;
+  natureId?: number | null;
+  periodId?: number | null;
   validated?: boolean;
 };
 

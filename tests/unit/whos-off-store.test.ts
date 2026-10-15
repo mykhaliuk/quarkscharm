@@ -6,6 +6,7 @@ import plannerService from '../fixtures/qs/planner-service.json';
 const build = (over: Partial<Parameters<typeof createWhosOff>[0]> = {}) => {
   const calls: string[] = [];
   const cursor = ref('2026-10-12');
+  const periods = ref(new Map<number, number>([[38, 14]]));
   const store = createWhosOff({
     getPlannerService: async (begin, end) => {
       calls.push(`${begin}..${end}`);
@@ -13,9 +14,10 @@ const build = (over: Partial<Parameters<typeof createWhosOff>[0]> = {}) => {
     },
     employeeId: () => 9001,
     focusDate: () => cursor.value,
+    natureOfPeriod: (periodId) => periods.value.get(periodId) ?? null,
     ...over,
   });
-  return { store, calls, cursor };
+  return { store, calls, cursor, periods };
 };
 
 describe('whos-off store', () => {
@@ -37,6 +39,7 @@ describe('whos-off store', () => {
         entity: 'TECH',
         job: 'Backend developer',
         avatarUrl: 'https://cdn.example.test/p/9002.png',
+        natureId: 14,
         am: true,
         pm: true,
       },
@@ -46,6 +49,7 @@ describe('whos-off store', () => {
         entity: 'TECH',
         job: 'QA',
         avatarUrl: null,
+        natureId: null,
         am: false,
         pm: true,
       },
@@ -83,5 +87,14 @@ describe('whos-off store', () => {
     await store.load();
     expect(store.status.value).toBe('ready');
     expect(store.offOn('2026-10-12')).toHaveLength(2);
+  });
+
+  test('natures appear when the periods load after the planner', async () => {
+    const { store, periods } = build();
+    periods.value = new Map();
+    await store.load();
+    expect(store.offOn('2026-10-12')[0]?.natureId).toBeNull();
+    periods.value = new Map([[38, 14]]);
+    expect(store.offOn('2026-10-12')[0]?.natureId).toBe(14);
   });
 });

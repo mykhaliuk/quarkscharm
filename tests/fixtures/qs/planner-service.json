@@ -61,7 +61,7 @@
                 "beginDate": "2026-10-12T00:00:00.000Z",
                 "endDate": "2026-10-12T23:00:00.000Z",
                 "duration": 1.0,
-                "natureId": null,
+                "periodId": 38,
                 "validated": true
               }
             ]
@@ -97,7 +97,7 @@
                 "beginDate": "2026-10-12T13:00:00.000Z",
                 "endDate": "2026-10-12T23:00:00.000Z",
                 "duration": 0.5,
-                "natureId": null,
+                "periodId": 99,
                 "validated": true
               }
             ]

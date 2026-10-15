@@ -26,6 +26,8 @@ test('the column lists the colleagues off today with am/pm marks', async ({
   await expect(people.nth(0).getByTestId('mark')).toHaveCount(0);
   await expect(people.nth(1)).toContainText('Cyr Demo');
   await expect(people.nth(1).getByTestId('mark')).toHaveText('pm');
+  await expect(people.nth(0).getByTestId('nature')).toHaveText('Congés Payés');
+  await expect(people.nth(1).getByTestId('nature')).toHaveCount(0);
   await expect(column).not.toContainText('Alex Example');
   const service = qs.callsTo(/planners\/service$/);
   expect(service).toHaveLength(1);
