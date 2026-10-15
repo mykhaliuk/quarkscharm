@@ -1,11 +1,11 @@
 ## 1. Data
 
-- [x] 1.1 `app/utils/qs/types.ts`: optional `periodId` on `RawSegment`. `app/utils/qs/map.ts`: `toColleague` takes a lookup from period to nature and uses it when `natureId` is null. Check: unit tests for a known period, an unknown period and a missing period.
-- [x] 1.2 `app/utils/whos-off-store.ts`: keep the raw planner employees per month and map them with the lookup, so the natures appear when the entitlements load after the planner. `OffEntry` gets `natureId`. Check: unit test that loads the entitlements after the planner.
+- [x] 1.1 `app/utils/qs/types.ts`: `RawPeriod` and an optional `periodId` on `RawSegment`. `app/utils/qs/api.ts`: `getPeriods` reads `org/organization/metadata/absencePeriod`. `app/utils/qs/map.ts`: `toColleague` takes a lookup from a segment to a nature. Check: unit tests for the mapper.
+- [x] 1.2 `app/utils/whos-off-store.ts`: load the periods once, keep the raw planner employees per month, and apply the rule: period nature, else remote work for 3 days or less, else no nature. `OffEntry` gets `natureId` and `isRemote`; the store gives `remote` and `away`. Check: unit tests for a known period, an unknown period, a long absence, a late remote nature and failed periods.
 
 ## 2. Column
 
-- [x] 2.1 `app/composables/useWhosOff.ts` gives the lookup from the entitlements store. `app/components/WhosOff.vue` shows a swatch and the nature label for an entry with a nature. Check: Playwright test on the column.
+- [x] 2.1 `app/composables/useWhosOff.ts` gives the period call and the remote nature (reference `TT`). `app/components/WhosOff.vue` shows the two sections, the nature in "Off", a sticky column no higher than the window, and a scroll in each section. Check: Playwright test on the two sections.
 
 ## 3. Gate
 
