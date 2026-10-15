@@ -27,6 +27,7 @@ export type AbsenceRequest = {
   comment: string | null;
   segments: RequestSegment[];
   cancelSequenceId: number | null;
+  cancelNeedsApproval: boolean;
 };
 
 export type Entitlement = {
@@ -84,6 +85,8 @@ export type Preview = {
 export const toRequest = (raw: RawRequest): AbsenceRequest => {
   const begin = fromApiDate(raw.beginDate);
   const end = fromApiDate(raw.endDate);
+  const direct = raw._workflows?.CancelRequest ?? null;
+  const approved = raw._workflows?.CancellationRequest ?? null;
   return {
     id: raw.id,
     statusId: raw.statusId,
@@ -100,7 +103,8 @@ export const toRequest = (raw: RawRequest): AbsenceRequest => {
       endDate: segment.endDate,
       duration: segment.duration,
     })),
-    cancelSequenceId: raw._workflows?.CancelRequest?.sequenceId ?? null,
+    cancelSequenceId: (direct ?? approved)?.sequenceId ?? null,
+    cancelNeedsApproval: direct === null && approved !== null,
   };
 };
 

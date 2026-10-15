@@ -32,12 +32,20 @@ describe('toRequest', () => {
         },
       ],
       cancelSequenceId: 11283,
+      cancelNeedsApproval: false,
     });
+  });
+
+  test('a validated request exposes a cancellation that needs approval', () => {
+    const request = toRequest(requests.value[2]!);
+    expect(request.cancelSequenceId).toBe(11282);
+    expect(request.cancelNeedsApproval).toBe(true);
   });
 
   test('a request without a cancel workflow has a null sequence', () => {
     const request = toRequest(requests.value[1]!);
     expect(request.cancelSequenceId).toBeNull();
+    expect(request.cancelNeedsApproval).toBe(false);
     expect(request.beginHour).toBe(13);
     expect(request.endHour).toBe(23);
     expect(request.comment).toBe('dentiste');

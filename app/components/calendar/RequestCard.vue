@@ -36,6 +36,9 @@ const style = computed(() => ({
   top: `${props.anchor.top}px`,
   left: `${props.anchor.left}px`,
 }));
+const cancelVerb = computed(() =>
+  props.request.cancelNeedsApproval ? 'Ask to cancel' : 'Cancel',
+);
 const accept = () => confirm.accept(async () => emit('cancel', props.request));
 
 const noButton = ref<HTMLButtonElement | null>(null);
@@ -72,7 +75,9 @@ defineExpose({ askCancel });
       class="acts confirm"
       role="alertdialog"
     >
-      <span class="caption">Cancel {{ label(natureId) }} {{ dates }}?</span>
+      <span class="caption"
+        >{{ cancelVerb }} {{ label(natureId) }} {{ dates }}?</span
+      >
       <button type="button" class="btn danger label" @click="accept">
         Yes
       </button>
@@ -95,7 +100,7 @@ defineExpose({ askCancel });
         class="btn label"
         @click="confirm.ask"
       >
-        Cancel
+        {{ cancelVerb }}
       </button>
     </div>
   </div>
