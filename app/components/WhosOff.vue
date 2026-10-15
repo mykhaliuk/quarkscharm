@@ -70,16 +70,23 @@ const initials = (name: string) =>
       {{ formatDay(whosOff.focusDate.value) }}
     </div>
     <p v-if="whosOff.status.value === 'failed'" class="caption note">
-      The service planner did not load.
+      The favorites or the planner did not load.
       <button type="button" class="btn label" @click="whosOff.load">
         Retry
       </button>
     </p>
-    <p v-else-if="whosOff.status.value === 'loading'" class="caption muted">
+    <p v-else-if="whosOff.status.value !== 'ready'" class="caption muted">
       Loading…
     </p>
+    <p
+      v-else-if="!whosOff.hasFavorites.value"
+      class="caption muted"
+      data-testid="no-favorites"
+    >
+      No favorites yet. Pin people in the quarksUp directory to see them here.
+    </p>
     <p v-else-if="whosOff.focused.value.length === 0" class="caption muted">
-      Everyone is in
+      All your favorites are in
     </p>
     <template v-else>
       <section

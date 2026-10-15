@@ -1,4 +1,4 @@
-import { getPeriods, getPlannerService } from '~/utils/qs/api';
+import { getFavorites, getPeriods, getPlannerService } from '~/utils/qs/api';
 import { whenConnected } from '~/utils/qs/retry';
 import { createWhosOff, type WhosOffStore } from '~/utils/whos-off-store';
 
@@ -14,6 +14,7 @@ export const useWhosOff = (): WhosOffStore => {
     employeeId: () => session.state.me?.employeeId ?? 0,
     focusDate: () => cursor.cursor.value,
     getPeriods: () => whenConnected(getPeriods),
+    getFavorites: () => whenConnected(getFavorites),
     remoteNatureId: () =>
       [...natures.byId.value.values()].find((n) => n.reference === 'TT')?.id ??
       null,

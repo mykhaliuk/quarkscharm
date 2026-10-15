@@ -1,0 +1,20 @@
+[
+  {
+    "id": 9002,
+    "firstName": "Bea",
+    "lastName": "Sample",
+    "pinned": true
+  },
+  {
+    "id": 9003,
+    "firstName": "Cyr",
+    "lastName": "Demo",
+    "pinned": true
+  },
+  {
+    "id": 9005,
+    "firstName": "Eve",
+    "lastName": "Product",
+    "pinned": true
+  }
+]

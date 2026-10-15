@@ -47,6 +47,13 @@ export type RawPeriod = {
   isActive?: boolean;
 };
 
+export type RawDirectoryPerson = {
+  id: number;
+  firstName?: string;
+  lastName?: string;
+  pinned?: boolean;
+};
+
 export type RawStatus = { id: number; reference?: string; label: string };
 
 export type RawItemSet<T> = { reference?: string; label?: string; items: T[] };

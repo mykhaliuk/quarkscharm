@@ -27,13 +27,16 @@ test('the column lists the colleagues off today with am/pm marks', async ({
   await expect(remote.getByTestId('person')).toContainText('Cyr Demo');
   await expect(remote.getByTestId('mark')).toHaveText('pm');
   await expect(remote.getByTestId('nature')).toHaveCount(0);
-  const bea = away.getByTestId('person');
-  await expect(bea).toHaveCount(1);
-  await expect(bea).toContainText('Bea Sample');
+  await expect(away.getByTestId('person')).toHaveCount(2);
+  const bea = away.getByTestId('person').filter({ hasText: 'Bea Sample' });
   await expect(bea).toContainText('TECH');
   await expect(bea.getByTestId('mark')).toHaveCount(0);
   await expect(bea.getByTestId('nature')).toHaveText('Congés Payés');
+  const eve = away.getByTestId('person').filter({ hasText: 'Eve Product' });
+  await expect(eve).toContainText('PRODUIT');
+  await expect(eve.getByTestId('nature')).toHaveText('Fulll Off');
   await expect(column).not.toContainText('Alex Example');
+  await expect(column).not.toContainText('Finn Other');
   const service = qs.callsTo(/planners\/service$/);
   expect(service).toHaveLength(1);
   expect(service[0]!.query).toMatchObject({
@@ -52,14 +55,14 @@ test('a click on a day without a brush focuses it, Today returns', async ({
   const column = page.getByTestId('whos-off');
   await page.locator('[data-date="2026-12-24"]').click();
   await expect(column).toContainText('24 Dec 2026');
-  await expect(column).toContainText('Everyone is in');
+  await expect(column).toContainText('All your favorites are in');
   await expect.poll(() => qs.callsTo(/planners\/service$/).length).toBe(2);
   await page.locator('[data-date="2026-12-23"]').click();
   await expect(column).toContainText('23 Dec 2026');
   expect(qs.callsTo(/planners\/service$/)).toHaveLength(2);
   await column.getByRole('button', { name: 'Today' }).click();
   await expect(column).toContainText('12 Oct 2026');
-  await expect(column.getByTestId('person')).toHaveCount(2);
+  await expect(column.getByTestId('person')).toHaveCount(3);
 });
 
 test('a click with a brush paints the day and focuses it', async ({ page }) => {
@@ -81,6 +84,10 @@ test('a long remote list scrolls inside its section and keeps the off section', 
   qs.override('GET', /planners\/service$/, () => ({
     status: 200,
     body: [{ id: 42, label: 'TECH', employees: crowd(40, 3) }],
+  }));
+  qs.override('GET', /people\/directories$/, () => ({
+    status: 200,
+    body: crowd(40, 3).map((person) => ({ id: person.id, pinned: true })),
   }));
   await page.goto('/connect');
   await page.getByLabel('Tenant').fill('fulll');
@@ -130,3 +137,17 @@ function crowd(remoteCount: number, awayCount: number) {
   );
   return [me, ...remote, ...away];
 }
+
+test('without favorites the column asks to pin people', async ({ page }) => {
+  await page.clock.setFixedTime(new Date('2026-10-12T09:00:00+02:00'));
+  const qs = await installQsFixtures(page);
+  qs.override('GET', /people\/directories$/, () => ({ status: 200, body: [] }));
+  await page.goto('/connect');
+  await page.getByLabel('Tenant').fill('fulll');
+  await page.getByLabel('Token').fill(buildToken());
+  await page.getByRole('button', { name: 'Connect' }).click();
+  await expect(page.getByTestId('no-favorites')).toBeVisible();
+  const calls = qs.callsTo(/people\/directories$/);
+  expect(calls).toHaveLength(1);
+  expect(calls[0]!.query).toMatchObject({ pinned: 'true' });
+});

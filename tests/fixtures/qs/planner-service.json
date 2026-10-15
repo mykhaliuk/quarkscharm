@@ -103,6 +103,71 @@
           }
         ],
         "picture": null
+      },
+      {
+        "id": 9006,
+        "firstName": "Finn",
+        "lastName": "Other",
+        "job": {
+          "id": 260,
+          "label": "Developer"
+        },
+        "entity": {
+          "id": 42,
+          "label": "TECH"
+        },
+        "nonWorkingDates": [],
+        "absences": [
+          {
+            "id": 7006,
+            "segments": [
+              {
+                "id": 7106,
+                "beginDate": "2026-10-12T00:00:00.000Z",
+                "endDate": "2026-10-12T23:00:00.000Z",
+                "duration": 1.0,
+                "validated": true
+              }
+            ]
+          }
+        ],
+        "picture": null
+      }
+    ]
+  },
+  {
+    "id": 39,
+    "label": "PRODUIT",
+    "employees": [
+      {
+        "id": 9005,
+        "firstName": "Eve",
+        "lastName": "Product",
+        "job": {
+          "id": 260,
+          "label": "Product owner"
+        },
+        "entity": {
+          "id": 39,
+          "label": "PRODUIT"
+        },
+        "nonWorkingDates": [],
+        "absences": [
+          {
+            "id": 7005,
+            "segments": [
+              {
+                "id": 7105,
+                "beginDate": "2026-10-12T00:00:00.000Z",
+                "endDate": "2026-10-12T23:00:00.000Z",
+                "duration": 1.0,
+                "validated": true,
+                "periodId": 42
+              }
+            ]
+          }
+        ],
+        "picture": null
       }
     ]
   }

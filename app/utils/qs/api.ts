@@ -4,6 +4,7 @@ import { qsFetch } from './fetch';
 import type {
   RawCancelAnswer,
   RawCreateEnvelope,
+  RawDirectoryPerson,
   RawEntitlement,
   RawHolidays,
   RawItemSet,
@@ -56,6 +57,11 @@ export const getPeriods = async (): Promise<RawPeriod[]> =>
       { query: { includeInactive: 'true', ...LOCALE } },
     ),
   );
+
+export const getFavorites = () =>
+  qsFetch<RawDirectoryPerson[]>('org/people/directories', {
+    query: { pinned: 'true', top: 500, skip: 0, ...LOCALE },
+  });
 
 export const getStatuses = async (): Promise<RawStatus[]> =>
   items(
