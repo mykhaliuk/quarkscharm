@@ -106,7 +106,8 @@ Factorial's `x-api-user-id`.
 
 Array of `{ id, label, employees: [ <same shape as planners/me> ] }`, one item
 per service (TECH 42, PRODUIT 39, FINANCE 37, RH 41, RELATION CLIENT 40,
-MARKETING 38, COMMERCE 36, plus one unlabelled). Segments in this view have
+MARKETING 38, COMMERCE 36, plus one unlabelled). On 2026-10-15 each employee
+has `entity { id, label }` at the root and no `position`. Segments in this view have
 `natureId: null` for other people (privacy), `validated` boolean.
 
 ### entitlements

@@ -10,6 +10,7 @@ export type RawEmployee = {
   reference?: string;
   picture?: RawPicture;
   job?: { id?: number; label?: string } | null;
+  entity?: { id?: number; label?: string } | null;
   position?: {
     serviceId?: number;
     job?: { label?: string } | null;

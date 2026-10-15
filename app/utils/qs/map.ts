@@ -145,7 +145,7 @@ const avatarOf = (employee: RawEmployee): string | null =>
 export const toColleague = (raw: RawPlannerEmployee): Colleague => ({
   employeeId: raw.id,
   name: fullName(raw),
-  entity: raw.position?.entity?.label ?? null,
+  entity: raw.entity?.label ?? raw.position?.entity?.label ?? null,
   job: raw.job?.label ?? raw.position?.job?.label ?? null,
   avatarUrl: avatarOf(raw),
   slots: segmentsToSlots(
