@@ -14,8 +14,8 @@
 ## 3. Screens
 
 - [x] 3.1 `app/pages/connect.vue`: try the extension on mount when a tenant is stored, and on Connect with an empty token field; messages for `login` and `timeout`. `app/components/TokenPrompt.vue`: closed while `renewing`. Check: Playwright with a stub of `chrome.runtime` added by `addInitScript`: connect without a paste, a 401 without a prompt, and the paste flow without the stub.
-- [ ] 3.2 README: install steps for the extension and what it reads. Check: the steps load the extension on a clean Chrome profile.
+- [x] 3.2 README: install steps for the extension and what it reads. Check: the steps load the extension on a clean Chrome profile.
 
 ## 4. Gate
 
-- [ ] 4.1 `bun run check` and `bunx playwright test` green; the owner connects on localhost with the extension, without a paste, and sees a silent renewal.
+- [x] 4.1 `bun run check` and `bunx playwright test` green; the owner connects on localhost with the extension, without a paste, and sees a silent renewal.
