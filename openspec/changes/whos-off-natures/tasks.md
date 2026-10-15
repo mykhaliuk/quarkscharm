@@ -7,6 +7,10 @@
 
 - [x] 2.1 `app/composables/useWhosOff.ts` gives the period call and the remote nature (reference `TT`). `app/components/WhosOff.vue` shows the two sections, the nature in "Off", a sticky column no higher than the window, and a scroll in each section. Check: Playwright test on the two sections.
 
-## 3. Gate
+## 3. Favorites
 
-- [ ] 3.1 `bun run check` and `bunx playwright test` green; the owner confirms on localhost.
+- [x] 3.1 `app/utils/qs/api.ts`: `getFavorites` reads `org/people/directories?pinned=true`. `app/utils/whos-off-store.ts`: load the favorites once, keep all employees of the planner, and list only the favorites. The status fails when the favorites fail. `app/components/WhosOff.vue`: a message when the user has no favorites. Check: unit tests for a hidden colleague, no favorites and failed favorites; Playwright tests for a favorite of another service and for no favorites.
+
+## 4. Gate
+
+- [ ] 4.1 `bun run check` and `bunx playwright test` green; the owner confirms on localhost.
