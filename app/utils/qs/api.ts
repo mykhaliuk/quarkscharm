@@ -108,11 +108,15 @@ export const getPlannerMe = (beginDate: string, endDate: string) =>
     },
   });
 
-export const getHolidays = (year: number, countryCode: string) =>
+export const getHolidays = (
+  beginDate: string,
+  endDate: string,
+  countryCode: string,
+) =>
   qsFetch<RawHolidays>('times/v3/planners/holidays', {
     query: {
-      beginDate: dayStart(`${year}-01-01`),
-      endDate: dayEnd(`${year}-12-31`),
+      beginDate: dayStart(beginDate),
+      endDate: dayEnd(endDate),
       countryCode,
       ...LOCALE,
     },

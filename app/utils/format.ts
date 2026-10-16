@@ -46,3 +46,6 @@ export const formatDayRange = (begin: string, end: string): string => {
 
 export const formatDays = (duration: number): string =>
   duration === 1 ? '1 day' : `${duration} days`;
+
+export const formatLeaveYear = (year: number): string =>
+  `${year}–${String((year + 1) % 100).padStart(2, '0')}`;

@@ -9,6 +9,7 @@ const props = defineProps<{
   slot: Slot;
   muted: boolean;
   holiday: string | null;
+  school?: string | null;
   today: boolean;
   pending: boolean;
   selected: boolean;
@@ -51,7 +52,14 @@ const accessibleName = computed(() => {
   for (const paint of [props.slot.am, props.slot.pm]) {
     if (paint !== null && props.label) natures.add(props.label(paint.natureId));
   }
-  return [formatDay(props.date), props.holiday, ...natures, status.value]
+  const school = props.school ?? null;
+  return [
+    formatDay(props.date),
+    props.holiday,
+    school,
+    ...natures,
+    status.value,
+  ]
     .filter((part) => part !== null)
     .join(', ');
 });
@@ -94,6 +102,7 @@ const classes = computed(() => ({
       @mousedown="emit('press', { date, half: 'pm', event: $event })"
     ></div>
     <span class="n cell-text">{{ day }}</span>
+    <span v-if="school" class="school" data-testid="school-dot"></span>
   </div>
 </template>
 
@@ -183,6 +192,19 @@ const classes = computed(() => ({
   border-radius: var(--radius-pill);
   background: var(--cell-pending);
   box-shadow: 0 0 0 1px var(--ink-2);
+}
+
+.school {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 5px;
+  height: 5px;
+  border-radius: var(--radius-pill);
+  background: var(--cell-school);
+  box-shadow: 0 0 0 1px var(--surface);
+  pointer-events: none;
+  z-index: 1;
 }
 
 .cursor {

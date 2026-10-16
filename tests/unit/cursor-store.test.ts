@@ -1,8 +1,11 @@
 import { describe, expect, test } from 'bun:test';
 import { createCursor } from '~/utils/cursor-store';
+import { leaveYearOf } from '~~/shared/utils/ymd';
+
+const yearOf = (ymd: string) => leaveYearOf(ymd, 6);
 
 const build = (start = '2026-10-12') => {
-  const shown = { year: Number(start.slice(0, 4)) };
+  const shown = { year: yearOf(start) };
   const switches: number[] = [];
   const store = createCursor({
     today: () => start,
@@ -11,6 +14,7 @@ const build = (start = '2026-10-12') => {
       switches.push(year);
       shown.year = year;
     },
+    yearOf,
   });
   return { store, switches };
 };
@@ -28,18 +32,26 @@ describe('cursor store', () => {
     expect(switches).toEqual([]);
   });
 
-  test('a motion past the year edge switches the shown year', () => {
+  test('a motion past 31 May switches to the next leave year', () => {
+    const { store, switches } = build('2027-05-31');
+    store.byDays(1);
+    expect(store.cursor.value).toBe('2027-06-01');
+    expect(switches).toEqual([2027]);
+    store.byDays(-1);
+    expect(store.cursor.value).toBe('2027-05-31');
+    expect(switches).toEqual([2027, 2026]);
+  });
+
+  test('31 December to 1 January stays in the leave year', () => {
     const { store, switches } = build('2026-12-31');
     store.byDays(1);
     expect(store.cursor.value).toBe('2027-01-01');
-    expect(switches).toEqual([2027]);
-    store.byDays(-1);
-    expect(switches).toEqual([2027, 2026]);
+    expect(switches).toEqual([]);
   });
 
   test('today returns to today and its year', () => {
     const { store, switches } = build();
-    store.byMonths(4);
+    store.byMonths(8);
     store.today();
     expect(store.cursor.value).toBe('2026-10-12');
     expect(switches).toEqual([2027, 2026]);
@@ -47,9 +59,9 @@ describe('cursor store', () => {
 
   test('a year switched elsewhere takes the cursor to the same day of that year', () => {
     const { store, switches } = build('2028-02-29');
-    store.followYear(2029);
+    store.followYear(2028);
     expect(store.cursor.value).toBe('2029-02-28');
-    store.followYear(2029);
+    store.followYear(2028);
     expect(store.cursor.value).toBe('2029-02-28');
     expect(switches).toEqual([]);
   });

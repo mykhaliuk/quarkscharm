@@ -61,20 +61,50 @@ export const monthDays = (year: number, month: number): Ymd[] => {
 
 export type MonthGrid = (Ymd | null)[][];
 
-export const yearMonths = (year: number): MonthGrid[] => {
-  const grids: MonthGrid[] = [];
-  for (let month = 1; month <= 12; month++) {
-    const days = monthDays(year, month);
-    const offset = weekday(days[0] as Ymd);
-    const cells: (Ymd | null)[] = Array.from({ length: 42 }, () => null);
-    for (let i = 0; i < days.length; i++) cells[offset + i] = days[i] as Ymd;
-    const grid: MonthGrid = [];
-    for (let row = 0; row < 6; row++) {
-      grid.push(cells.slice(row * 7, row * 7 + 7));
-    }
-    grids.push(grid);
+export type LeaveMonth = { year: number; month: number; grid: MonthGrid };
+
+export type YmdWindow = { from: Ymd; to: Ymd };
+
+export const DEFAULT_START_MONTH = 6;
+
+export const monthGrid = (year: number, month: number): MonthGrid => {
+  const days = monthDays(year, month);
+  const offset = weekday(days[0] as Ymd);
+  const cells: (Ymd | null)[] = Array.from({ length: 42 }, () => null);
+  for (let i = 0; i < days.length; i++) cells[offset + i] = days[i] as Ymd;
+  const grid: MonthGrid = [];
+  for (let row = 0; row < 6; row++) {
+    grid.push(cells.slice(row * 7, row * 7 + 7));
   }
-  return grids;
+  return grid;
+};
+
+export const leaveYearOf = (ymd: Ymd, startMonth: number): number => {
+  const year = Number(ymd.slice(0, 4));
+  return Number(ymd.slice(5, 7)) >= startMonth ? year : year - 1;
+};
+
+export const leaveYearWindow = (
+  year: number,
+  startMonth: number,
+): YmdWindow => {
+  const from = `${year}-${pad(startMonth)}-01`;
+  return { from, to: addDays(moveMonth(from, 12), -1) };
+};
+
+export const leaveYearMonths = (
+  year: number,
+  startMonth: number,
+): LeaveMonth[] => {
+  const months: LeaveMonth[] = [];
+  const from = leaveYearWindow(year, startMonth).from;
+  for (let i = 0; i < 12; i++) {
+    const first = moveMonth(from, i);
+    const y = Number(first.slice(0, 4));
+    const m = Number(first.slice(5, 7));
+    months.push({ year: y, month: m, grid: monthGrid(y, m) });
+  }
+  return months;
 };
 
 export const today = (timeZone: string): Ymd => {

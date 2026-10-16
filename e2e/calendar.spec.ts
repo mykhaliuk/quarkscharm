@@ -85,22 +85,34 @@ test('a request without a cancel workflow shows no cancel control', async ({
   await expect(card.getByRole('button', { name: 'Cancel' })).toHaveCount(0);
 });
 
-test('] and [ change the year and refetch', async ({ page }) => {
+test('the grid shows the leave year from June to May', async ({ page }) => {
   const qs = await connect(page);
-  await page.keyboard.press(']');
-  await expect(page.getByTestId('year')).toHaveText('2027');
-  await expect(page.locator('[data-year="2027"]')).toBeVisible();
-  await expect
-    .poll(() => qs.callsTo(/odata\/requests$/).map((c) => c.query.beginDate))
-    .toContain('2027-01-01T00:00:00Z');
-  await expect(page.locator('[data-date="2027-01-02"]')).not.toHaveClass(
-    /full/,
-  );
+  await expect(page.getByTestId('year')).toHaveText('2026–27');
+  const months = page.locator('[data-month]');
+  await expect(months).toHaveCount(12);
+  await expect(months.first()).toContainText('June');
+  await expect(months.last()).toContainText('May');
+  await expect(page.locator('[data-date="2026-06-01"]')).toBeVisible();
+  await expect(page.locator('[data-date="2027-05-31"]')).toBeVisible();
+  await expect(page.locator('[data-date="2026-05-31"]')).toHaveCount(0);
   await expect(
     page.locator('[data-date="2027-01-02"] [data-half="am"]'),
   ).toHaveAttribute('style', /--nature-cp/);
+  const requests = qs.callsTo(/odata\/requests$/);
+  expect(requests[0]!.query.beginDate).toBe('2026-06-01T00:00:00Z');
+});
+
+test('] and [ change the leave year and refetch', async ({ page }) => {
+  const qs = await connect(page);
+  await page.keyboard.press(']');
+  await expect(page.getByTestId('year')).toHaveText('2027–28');
+  await expect(page.locator('[data-year="2027"]')).toBeVisible();
+  await expect(page.locator('[data-date="2027-06-01"]')).toBeVisible();
+  await expect
+    .poll(() => qs.callsTo(/odata\/requests$/).map((c) => c.query.beginDate))
+    .toContain('2027-06-01T00:00:00Z');
   await page.keyboard.press('[');
-  await expect(page.getByTestId('year')).toHaveText('2026');
+  await expect(page.getByTestId('year')).toHaveText('2026–27');
 });
 
 test('a failed part shows a retry control that reloads it', async ({

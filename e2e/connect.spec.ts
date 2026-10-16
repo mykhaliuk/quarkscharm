@@ -40,7 +40,7 @@ test('a rejected token stays on connect, keeps the tenant, clears the token', as
   await expect(page).toHaveURL(/\/connect$/);
 });
 
-test('a valid token lands on / with the name and the expiry in the header', async ({
+test('a valid token lands on / with the avatar and the expiry in the header', async ({
   page,
 }) => {
   const qs = await installQsFixtures(page);
@@ -50,7 +50,10 @@ test('a valid token lands on / with the name and the expiry in the header', asyn
   await page.getByLabel('Token').fill(`Bearer ${token}`);
   await page.getByRole('button', { name: 'Connect' }).click();
   await expect(page).toHaveURL(/\/$/);
-  await expect(page.getByTestId('user-name')).toHaveText('Alex Example');
+  const avatar = page.getByTestId('user-avatar');
+  await expect(avatar).toHaveAttribute('title', 'Alex Example');
+  await expect(page.getByRole('img', { name: 'Alex Example' })).toBeVisible();
+  await expect(page.locator('header')).not.toContainText('Alex Example');
   await expect(page.getByTestId('token-until')).toHaveText(
     `token until ${tokenExpiryLabel(token)}`,
   );
@@ -60,7 +63,7 @@ test('a valid token lands on / with the name and the expiry in the header', asyn
   expect(me[0]!.headers['x-qs-tenant']).toBe('fulll');
   await page.reload();
   await expect(page).toHaveURL(/\/$/);
-  await expect(page.getByTestId('user-name')).toHaveText('Alex Example');
+  await expect(avatar).toHaveAttribute('title', 'Alex Example');
 });
 
 test('forget token returns to connect with the tenant prefilled', async ({
@@ -107,14 +110,17 @@ test('a 401 on a later call shows the token prompt and a new token resumes', asy
   await page.getByRole('button', { name: 'Next year' }).click();
   const prompt = page.getByTestId('token-prompt');
   await expect(prompt).toBeVisible();
-  await expect(page.getByTestId('user-name')).toHaveText('Alex Example');
+  await expect(page.getByTestId('user-avatar')).toHaveAttribute(
+    'title',
+    'Alex Example',
+  );
   await prompt.getByLabel('Token').fill(buildToken(7200));
   await prompt.getByRole('button', { name: 'Connect' }).click();
   await expect(prompt).toBeHidden();
   await expect
     .poll(() => qs.callsTo(/planners\/me$/).length)
     .toBeGreaterThanOrEqual(4);
-  await expect(page.getByTestId('year')).toHaveText('2027');
+  await expect(page.getByTestId('year')).toHaveText('2027–28');
 });
 
 test('forget token drops the previous selection and data', async ({ page }) => {

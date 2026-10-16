@@ -34,6 +34,7 @@
   --_dk-cell-holiday-fg: #efb6cc;
   --_dk-cell-today: var(--accent);
   --_dk-cell-pending: var(--surface);
+  --_dk-cell-school: var(--ink);
   --_dk-cell-selected: var(--accent);
   --_dk-cell-cursor: var(--ink);
   --_dk-scrim: #000000b3;
@@ -76,6 +77,7 @@
     --cell-holiday-fg: var(--_dk-cell-holiday-fg);
     --cell-today: var(--_dk-cell-today);
     --cell-pending: var(--_dk-cell-pending);
+    --cell-school: var(--_dk-cell-school);
     --cell-selected: var(--_dk-cell-selected);
     --cell-cursor: var(--_dk-cell-cursor);
     --scrim: var(--_dk-scrim);
@@ -118,6 +120,7 @@
   --cell-holiday-fg: var(--_dk-cell-holiday-fg);
   --cell-today: var(--_dk-cell-today);
   --cell-pending: var(--_dk-cell-pending);
+  --cell-school: var(--_dk-cell-school);
   --cell-selected: var(--_dk-cell-selected);
   --cell-cursor: var(--_dk-cell-cursor);
   --scrim: var(--_dk-scrim);

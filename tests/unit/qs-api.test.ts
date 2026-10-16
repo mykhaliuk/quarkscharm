@@ -128,11 +128,13 @@ describe('qs api', () => {
       locale: 'fr-FR',
     });
     serve(holidays);
-    expect(await api.getHolidays(2026, 'FR')).toEqual(holidays);
+    expect(await api.getHolidays('2026-06-01', '2027-05-31', 'FR')).toEqual(
+      holidays,
+    );
     expect(last().path).toBe('/api/qs/times/v3/planners/holidays');
     expect(last().query).toEqual({
-      beginDate: '2026-01-01T00:00:00Z',
-      endDate: '2026-12-31T23:00:00Z',
+      beginDate: '2026-06-01T00:00:00Z',
+      endDate: '2027-05-31T23:00:00Z',
       countryCode: 'FR',
       locale: 'fr-FR',
     });

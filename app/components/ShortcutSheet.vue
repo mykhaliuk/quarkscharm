@@ -33,7 +33,8 @@ const GROUPS = [
   {
     title: 'Year and help',
     rows: [
-      { keys: ['[', ']'], action: 'Previous / next year' },
+      { keys: ['[', ']'], action: 'Previous / next leave year' },
+      { keys: ['s'], action: 'Show or hide the school holidays' },
       { keys: ['?'], action: 'Show or hide this sheet' },
     ],
   },
