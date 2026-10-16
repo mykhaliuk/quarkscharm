@@ -20,4 +20,4 @@
 
 ## 4. Gate
 
-- [ ] 4.1 Existing unit and e2e tests updated for the leave year; `bun run check` and `bunx playwright test` green; the owner confirms on localhost.
+- [x] 4.1 Existing unit and e2e tests updated for the leave year; `bun run check` and `bunx playwright test` green; the owner confirms on localhost.
