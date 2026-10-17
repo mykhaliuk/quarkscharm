@@ -118,6 +118,13 @@ without a period has no nature at all: remote work, sick leave, unpaid
 leave and maternity leave look the same. `GET /times/v3/periods` returns 403
 for the Employee role.
 
+Periods are per nature and do not share one calendar. For Fulll on
+2026-10-17, the `CP` periods run from 1 June to 31 May (`label: '2026-2027'`,
+`dateBegin: '2026-06-01T00:00:00Z'`, `dateEnd: '2027-05-31T00:00:00Z'`); the
+other natures (FOFF, RTT) use the calendar year (`label: '2026'`). The app
+takes the leave year from the `CP` period that contains today: its
+`dateBegin` month is the first month of the year grid.
+
 ### entitlements
 
 Array of
@@ -135,6 +142,14 @@ Header `x-total-count`. Default returns periods n-1, n, n+1.
 ### holidays
 
 `{ public: [ { label, date } ], schoolTerm: [ { area, holidays: [ { beginDate, endDate, label } ] } ] }`
+
+`schoolTerm` holds one item per zone: `area` is `'Zone A'`, `'Zone B'` or
+`'Zone C'` for `countryCode=FR`, each with 7 holidays for a one-year query (2026). The
+dates are UTC midnights and both ends are school-free days:
+`'Vacances de Noël'` runs from Saturday `2025-12-20T00:00:00.000Z` to Sunday
+`2026-01-04T00:00:00.000Z`. A holiday whose end is after `beginDate` and
+whose begin is before `endDate` is returned whole, so it can cross the
+asked window.
 
 ### workflows/me
 
