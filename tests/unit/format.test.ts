@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test';
-import { formatDayRange, formatTime } from '~/utils/format';
+import { formatDayRange, formatLeaveYear, formatTime } from '~/utils/format';
 
 describe('formatTime', () => {
   test('formats a timestamp as HH:MM in the time zone', () => {
@@ -26,5 +26,12 @@ describe('formatDayRange', () => {
     expect(formatDayRange('2026-12-29', '2027-01-02')).toBe(
       '29 Dec 2026 – 2 Jan 2027',
     );
+  });
+});
+
+describe('formatLeaveYear', () => {
+  test('names the first year and the last two digits of the next', () => {
+    expect(formatLeaveYear(2026)).toBe('2026–27');
+    expect(formatLeaveYear(2099)).toBe('2099–00');
   });
 });

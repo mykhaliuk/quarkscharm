@@ -11,7 +11,9 @@ const PARTS: YearPart[] = ['requests', 'planner', 'holidays'];
 const HIGHLIGHT_MS = 1200;
 
 const session = useSession();
-const { store, year, previous, next } = useYear();
+const { store, year, startMonth, previous, next, resolveStartMonth } =
+  useYear();
+const school = useSchoolHolidays();
 const natures = useNatures();
 const selection = useSelection();
 const previews = usePreviews();
@@ -121,8 +123,12 @@ const onEnter = (date: string) => {
     drag.to = date;
     return;
   }
-  const label = store.state.holidays.get(date);
-  if (label === undefined) {
+  const labels = [
+    store.state.holidays.get(date),
+    school.days.value.get(date),
+  ].filter((part) => part !== undefined);
+  const label = labels.join(' · ');
+  if (label === '') {
     tooltip.value = null;
     return;
   }
@@ -279,6 +285,7 @@ useShortcuts({
   KeyX: () => void cancelAtCursor(),
   KeyU: selection.undo,
   'Shift+KeyU': selection.redo,
+  KeyS: school.toggle,
 });
 
 onMounted(() => {
@@ -289,6 +296,7 @@ onMounted(() => {
       ? store.load(year.value)
       : Promise.resolve();
   void own.then(() => whosOff.load());
+  void resolveStartMonth();
 });
 onBeforeUnmount(() => window.removeEventListener('mouseup', onRelease));
 </script>
@@ -335,10 +343,12 @@ onBeforeUnmount(() => window.removeEventListener('mouseup', onRelease));
       />
       <YearGrid
         :year="year"
+        :start-month="startMonth"
         :slots="visibleSlots"
         :selection="selection.paint"
         :is-selectable="store.isSelectable"
         :holidays="store.state.holidays"
+        :school="school.days.value"
         :today="todayYmd"
         :pending-ids="pendingIds"
         :focused-date="card.date.value"

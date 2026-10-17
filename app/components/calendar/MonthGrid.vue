@@ -28,6 +28,7 @@ const props = defineProps<{
   selection: Map<string, Slot>;
   isSelectable: (ymd: string) => boolean;
   holidays: Map<string, string>;
+  school: Map<string, string>;
   today: string;
   pendingIds: Set<number>;
   focusedDate: string | null;
@@ -79,6 +80,7 @@ const isRanged = (date: string): boolean => {
             :slot="slotOf(date)"
             :muted="!isSelectable(date)"
             :holiday="holidays.get(date) ?? null"
+            :school="school.get(date) ?? null"
             :today="date === today"
             :pending="isPending(date)"
             :selected="isSelected(date)"

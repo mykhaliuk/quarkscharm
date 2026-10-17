@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { formatTime } from '~/utils/format';
+import { formatLeaveYear, formatTime } from '~/utils/format';
 
 const session = useSession();
 const { year, previous, next } = useYear();
@@ -30,9 +30,18 @@ const forget = () => {
       class="avatar"
       :src="me.pictureUrl"
       :alt="fullName"
+      :title="fullName"
+      data-testid="user-avatar"
     />
-    <span v-else class="avatar initials label">{{ initials }}</span>
-    <span class="name" data-testid="user-name">{{ fullName }}</span>
+    <span
+      v-else
+      class="avatar initials label"
+      role="img"
+      :aria-label="fullName"
+      :title="fullName"
+      data-testid="user-avatar"
+      >{{ initials }}</span
+    >
     <div class="year">
       <button
         type="button"
@@ -42,7 +51,9 @@ const forget = () => {
       >
         ‹
       </button>
-      <span class="display" data-testid="year">{{ year }}</span>
+      <span class="display" data-testid="year">{{
+        formatLeaveYear(year)
+      }}</span>
       <button
         type="button"
         class="iconbtn"
@@ -57,6 +68,7 @@ const forget = () => {
       <span data-testid="token-until">token until {{ until }}</span>
       <button type="button" class="link" @click="forget">Forget token</button>
     </div>
+    <SchoolToggle />
     <ThemeToggle />
   </header>
 </template>
@@ -86,10 +98,6 @@ const forget = () => {
   color: var(--ink-2);
 }
 
-.name {
-  font-weight: 600;
-}
-
 .year {
   display: flex;
   align-items: center;
@@ -98,7 +106,7 @@ const forget = () => {
 }
 
 .year .display {
-  min-width: 76px;
+  min-width: 112px;
   text-align: center;
 }
 

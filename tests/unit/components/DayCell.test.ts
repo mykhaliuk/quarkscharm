@@ -119,4 +119,17 @@ describe('DayCell', () => {
       '14 Oct 2026, Fulll Off, selected',
     );
   });
+
+  test('a school holiday shows the dot and names the holiday', () => {
+    const plain = mount(DayCell, { props: base });
+    expect(plain.find('[data-testid="school-dot"]').exists()).toBe(false);
+    const school = mount(DayCell, {
+      props: { ...base, school: 'Vacances de la Toussaint (Zone B)' },
+    });
+    expect(school.find('[data-testid="school-dot"]').exists()).toBe(true);
+    expect(school.classes()).not.toContain('muted');
+    expect(school.attributes('aria-label')).toBe(
+      '14 Oct 2026, Vacances de la Toussaint (Zone B)',
+    );
+  });
 });

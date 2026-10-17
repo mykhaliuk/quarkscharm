@@ -19,7 +19,7 @@ the fallback.
 - **WHEN** the user submits a tenant and a token and the organization API
   answers the current-user call successfully
 - **THEN** the system stores tenant and token in the browser, shows the
-  user's name and avatar, and opens the calendar
+  user's avatar, and opens the calendar
 
 #### Scenario: Rejected token
 - **WHEN** the current-user call answers 401

@@ -52,7 +52,7 @@ test('j moves a week and the who-is-off column follows the cursor', async ({
   await expectCursor(page, '2026-10-04');
   await press(page, 'Shift+J');
   await expectCursor(page, '2027-02-04');
-  await expect(page.getByTestId('year')).toHaveText('2027');
+  await expect(page.getByTestId('year')).toHaveText('2026–27');
   await press(page, 'Shift+K', 'Shift+L');
   await expectCursor(page, '2026-11-04');
   await press(page, '.');
@@ -60,32 +60,40 @@ test('j moves a week and the who-is-off column follows the cursor', async ({
   await expect(column).toContainText('12 Oct 2026');
 });
 
-test('l on 31 December shows the next year and its first day', async ({
+test('l on 31 May shows the next leave year and its first day', async ({
   page,
 }) => {
   const qs = await connect(page);
-  await cell(page, '2026-12-31').click();
+  await cell(page, '2027-05-31').click();
   await press(page, 'l');
-  await expect(page.getByTestId('year')).toHaveText('2027');
-  await expectCursor(page, '2027-01-01');
+  await expect(page.getByTestId('year')).toHaveText('2027–28');
+  await expectCursor(page, '2027-06-01');
   await expect
     .poll(() => qs.callsTo(/odata\/requests$/).map((c) => c.query.beginDate))
-    .toContain('2027-01-01T00:00:00Z');
+    .toContain('2027-06-01T00:00:00Z');
   await press(page, 'ArrowLeft');
-  await expect(page.getByTestId('year')).toHaveText('2026');
-  await expectCursor(page, '2026-12-31');
+  await expect(page.getByTestId('year')).toHaveText('2026–27');
+  await expectCursor(page, '2027-05-31');
+});
+
+test('l on 31 December stays in the leave year', async ({ page }) => {
+  await connect(page);
+  await cell(page, '2026-12-31').click();
+  await press(page, 'l');
+  await expect(page.getByTestId('year')).toHaveText('2026–27');
+  await expectCursor(page, '2027-01-01');
 });
 
 test('] and [ switch the year, the arrow keys keep it', async ({ page }) => {
   await connect(page);
   await press(page, 'ArrowRight');
-  await expect(page.getByTestId('year')).toHaveText('2026');
+  await expect(page.getByTestId('year')).toHaveText('2026–27');
   await expectCursor(page, '2026-10-13');
   await press(page, ']');
-  await expect(page.getByTestId('year')).toHaveText('2027');
+  await expect(page.getByTestId('year')).toHaveText('2027–28');
   await expectCursor(page, '2027-10-13');
   await press(page, '[');
-  await expect(page.getByTestId('year')).toHaveText('2026');
+  await expect(page.getByTestId('year')).toHaveText('2026–27');
 });
 
 test('the physical J key moves the cursor on a Russian layout', async ({
@@ -201,7 +209,8 @@ test('? opens the sheet, other keys wait until it closes', async ({ page }) => {
     'Change',
     'Undo',
     'Redo',
-    'next year',
+    'next leave year',
+    'school holidays',
   ])
     await expect(sheet).toContainText(text);
   await press(page, 'j');

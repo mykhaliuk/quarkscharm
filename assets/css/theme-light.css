@@ -34,6 +34,7 @@
   --cell-holiday-fg: #8f2f57;
   --cell-today: var(--accent);
   --cell-pending: var(--surface);
+  --cell-school: var(--ink);
   --cell-selected: var(--accent);
   --cell-cursor: var(--ink);
   --scrim: #1b222cb3;

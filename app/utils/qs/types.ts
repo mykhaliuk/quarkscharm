@@ -45,6 +45,8 @@ export type RawPeriod = {
   reference?: string;
   label?: string;
   isActive?: boolean;
+  dateBegin?: string | null;
+  dateEnd?: string | null;
 };
 
 export type RawDirectoryPerson = {

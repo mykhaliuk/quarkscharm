@@ -3,11 +3,14 @@ import {
   addDays,
   daysBetween,
   isYmd,
+  leaveYearMonths,
+  leaveYearOf,
+  leaveYearWindow,
   monthDays,
+  monthGrid,
   moveMonth,
   today,
   weekday,
-  yearMonths,
 } from '~~/shared/utils/ymd';
 
 describe('isYmd', () => {
@@ -60,15 +63,11 @@ describe('monthDays', () => {
   });
 });
 
-describe('yearMonths', () => {
-  test('returns 12 grids of 6 rows by 7 with null padding, Monday first', () => {
-    const grids = yearMonths(2026);
-    expect(grids).toHaveLength(12);
-    for (const grid of grids) {
-      expect(grid).toHaveLength(6);
-      for (const row of grid) expect(row).toHaveLength(7);
-    }
-    const november = grids[10]!;
+describe('monthGrid', () => {
+  test('returns 6 rows by 7 with null padding, Monday first', () => {
+    const november = monthGrid(2026, 11);
+    expect(november).toHaveLength(6);
+    for (const row of november) expect(row).toHaveLength(7);
     expect(november[0]).toEqual([
       null,
       null,
@@ -82,9 +81,51 @@ describe('yearMonths', () => {
   });
 
   test('pads a month that starts on Monday with no leading nulls', () => {
-    const june = yearMonths(2026)[5]!;
+    const june = monthGrid(2026, 6);
     expect(june[0]![0]).toBe('2026-06-01');
     expect(june[5]).toEqual([null, null, null, null, null, null, null]);
+  });
+});
+
+describe('leave year', () => {
+  test('a June start puts June to May in one year', () => {
+    expect(leaveYearOf('2026-10-16', 6)).toBe(2026);
+    expect(leaveYearOf('2027-03-10', 6)).toBe(2026);
+    expect(leaveYearOf('2027-05-31', 6)).toBe(2026);
+    expect(leaveYearOf('2027-06-01', 6)).toBe(2027);
+    expect(leaveYearWindow(2026, 6)).toEqual({
+      from: '2026-06-01',
+      to: '2027-05-31',
+    });
+  });
+
+  test('a January start is the calendar year', () => {
+    expect(leaveYearOf('2026-01-01', 1)).toBe(2026);
+    expect(leaveYearOf('2026-12-31', 1)).toBe(2026);
+    expect(leaveYearWindow(2026, 1)).toEqual({
+      from: '2026-01-01',
+      to: '2026-12-31',
+    });
+  });
+
+  test('lists the twelve months from the start month', () => {
+    const months = leaveYearMonths(2026, 6);
+    expect(months).toHaveLength(12);
+    expect(months.map((m) => `${m.year}-${m.month}`)).toEqual([
+      '2026-6',
+      '2026-7',
+      '2026-8',
+      '2026-9',
+      '2026-10',
+      '2026-11',
+      '2026-12',
+      '2027-1',
+      '2027-2',
+      '2027-3',
+      '2027-4',
+      '2027-5',
+    ]);
+    expect(months[0]!.grid[0]![0]).toBe('2026-06-01');
   });
 });
 

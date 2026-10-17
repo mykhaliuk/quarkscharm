@@ -7,21 +7,27 @@
       "reference": "2026-2027",
       "label": "2026-2027",
       "natureId": 14,
-      "isActive": true
+      "isActive": true,
+      "dateBegin": "2026-06-01T00:00:00Z",
+      "dateEnd": "2027-05-31T00:00:00Z"
     },
     {
       "id": 42,
       "reference": "2026",
       "label": "2026",
       "natureId": 17,
-      "isActive": true
+      "isActive": true,
+      "dateBegin": "2026-01-01T00:00:00Z",
+      "dateEnd": "2026-12-31T00:00:00Z"
     },
     {
       "id": 47,
       "reference": "2026",
       "label": "2026",
       "natureId": 55,
-      "isActive": true
+      "isActive": true,
+      "dateBegin": "2026-01-01T00:00:00Z",
+      "dateEnd": "2026-12-31T00:00:00Z"
     }
   ]
 }

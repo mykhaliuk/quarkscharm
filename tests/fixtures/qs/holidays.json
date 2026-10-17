@@ -1,25 +1,108 @@
 {
   "public": [
-    { "label": "Jour de l'an", "date": "2026-01-01T00:00:00.000Z" },
-    { "label": "Lundi de Pâques", "date": "2026-04-06T00:00:00.000Z" },
-    { "label": "Fête du Travail", "date": "2026-05-01T00:00:00.000Z" },
-    { "label": "Victoire 1945", "date": "2026-05-08T00:00:00.000Z" },
-    { "label": "Ascension", "date": "2026-05-14T00:00:00.000Z" },
-    { "label": "Lundi de Pentecôte", "date": "2026-05-25T00:00:00.000Z" },
-    { "label": "Fête nationale", "date": "2026-07-14T00:00:00.000Z" },
-    { "label": "Assomption", "date": "2026-08-15T00:00:00.000Z" },
-    { "label": "Toussaint", "date": "2026-11-01T00:00:00.000Z" },
-    { "label": "Armistice 1918", "date": "2026-11-11T00:00:00.000Z" },
-    { "label": "Noël", "date": "2026-12-25T00:00:00.000Z" }
+    {
+      "label": "Jour de l'an",
+      "date": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "label": "Lundi de Pâques",
+      "date": "2026-04-06T00:00:00.000Z"
+    },
+    {
+      "label": "Fête du Travail",
+      "date": "2026-05-01T00:00:00.000Z"
+    },
+    {
+      "label": "Victoire 1945",
+      "date": "2026-05-08T00:00:00.000Z"
+    },
+    {
+      "label": "Ascension",
+      "date": "2026-05-14T00:00:00.000Z"
+    },
+    {
+      "label": "Lundi de Pentecôte",
+      "date": "2026-05-25T00:00:00.000Z"
+    },
+    {
+      "label": "Fête nationale",
+      "date": "2026-07-14T00:00:00.000Z"
+    },
+    {
+      "label": "Assomption",
+      "date": "2026-08-15T00:00:00.000Z"
+    },
+    {
+      "label": "Toussaint",
+      "date": "2026-11-01T00:00:00.000Z"
+    },
+    {
+      "label": "Armistice 1918",
+      "date": "2026-11-11T00:00:00.000Z"
+    },
+    {
+      "label": "Noël",
+      "date": "2026-12-25T00:00:00.000Z"
+    }
   ],
   "schoolTerm": [
     {
-      "area": "C",
+      "area": "Zone A",
       "holidays": [
         {
           "beginDate": "2026-10-17T00:00:00.000Z",
-          "endDate": "2026-11-02T00:00:00.000Z",
+          "endDate": "2026-11-01T00:00:00.000Z",
           "label": "Vacances de la Toussaint"
+        },
+        {
+          "beginDate": "2026-12-19T00:00:00.000Z",
+          "endDate": "2027-01-03T00:00:00.000Z",
+          "label": "Vacances de Noël"
+        },
+        {
+          "beginDate": "2027-02-13T00:00:00.000Z",
+          "endDate": "2027-02-28T00:00:00.000Z",
+          "label": "Vacances d'Hiver"
+        }
+      ]
+    },
+    {
+      "area": "Zone B",
+      "holidays": [
+        {
+          "beginDate": "2026-10-17T00:00:00.000Z",
+          "endDate": "2026-11-01T00:00:00.000Z",
+          "label": "Vacances de la Toussaint"
+        },
+        {
+          "beginDate": "2026-12-19T00:00:00.000Z",
+          "endDate": "2027-01-03T00:00:00.000Z",
+          "label": "Vacances de Noël"
+        },
+        {
+          "beginDate": "2027-02-20T00:00:00.000Z",
+          "endDate": "2027-03-07T00:00:00.000Z",
+          "label": "Vacances d'Hiver"
+        }
+      ]
+    },
+    {
+      "area": "Zone C",
+      "holidays": [
+        {
+          "beginDate": "2026-10-17T00:00:00.000Z",
+          "endDate": "2026-11-01T00:00:00.000Z",
+          "label": "Vacances de la Toussaint"
+        },
+        {
+          "beginDate": "2026-12-19T00:00:00.000Z",
+          "endDate": "2027-01-03T00:00:00.000Z",
+          "label": "Vacances de Noël"
+        },
+        {
+          "beginDate": "2027-02-06T00:00:00.000Z",
+          "endDate": "2027-02-21T00:00:00.000Z",
+          "label": "Vacances d'Hiver"
         }
       ]
     }

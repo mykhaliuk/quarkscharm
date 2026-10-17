@@ -5,9 +5,10 @@ type Deps = {
   today: () => Ymd;
   shownYear: () => number;
   showYear: (year: number) => void;
+  yearOf: (ymd: Ymd) => number;
 };
 
-export const createCursor = ({ today, shownYear, showYear }: Deps) => {
+export const createCursor = ({ today, shownYear, showYear, yearOf }: Deps) => {
   const cursor = ref<Ymd>(today());
 
   const moveTo = (ymd: Ymd) => {
@@ -38,7 +39,3 @@ export const createCursor = ({ today, shownYear, showYear }: Deps) => {
 };
 
 export type CursorStore = ReturnType<typeof createCursor>;
-
-function yearOf(ymd: Ymd): number {
-  return Number(ymd.slice(0, 4));
-}

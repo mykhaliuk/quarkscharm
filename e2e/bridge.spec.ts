@@ -47,7 +47,10 @@ test('a stored tenant connects with the extension without a paste', async ({
   );
   await page.goto('/connect');
   await expect(page).toHaveURL(/\/$/);
-  await expect(page.getByTestId('user-name')).toHaveText('Alex Example');
+  await expect(page.getByTestId('user-avatar')).toHaveAttribute(
+    'title',
+    'Alex Example',
+  );
   expect(await bridgeCalls(page)).toEqual([{ type: 'token', tenant: 'fulll' }]);
 });
 
@@ -99,7 +102,7 @@ test('a 401 with the extension retries without the prompt', async ({
   await expect.poll(() => qs.callsTo(/planners\/me$/).length).toBe(2);
   qs.failNext('GET', /planners\/me$/, 401, { message: 'expired' });
   await page.getByRole('button', { name: 'Next year' }).click();
-  await expect(page.getByTestId('year')).toHaveText('2027');
+  await expect(page.getByTestId('year')).toHaveText('2027–28');
   await expect
     .poll(() => qs.callsTo(/planners\/me$/).length)
     .toBeGreaterThanOrEqual(4);
