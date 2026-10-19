@@ -54,11 +54,12 @@ describe('toRequest', () => {
 
 describe('toEntitlement', () => {
   test('maps the balance fields and the period label', () => {
-    expect(toEntitlement(entitlements[0]!)).toEqual({
+    expect(toEntitlement(entitlements[0]!, null)).toEqual({
       id: 388,
       natureId: 14,
       periodId: 38,
       periodLabel: 'Fulll (CP + fulll off) · 2026-06-01 – 2027-05-31',
+      periodName: null,
       periodBegin: '2026-06-01',
       periodEnd: '2027-05-31',
       earned: 8.32,
@@ -70,9 +71,23 @@ describe('toEntitlement', () => {
 
   test('falls back to the agreement label without period dates', () => {
     const raw = { ...entitlements[2]!, period: { id: 51, natureId: 17 } };
-    const entitlement = toEntitlement(raw);
+    const entitlement = toEntitlement(raw, null);
     expect(entitlement.periodLabel).toBe('Period 51');
     expect(entitlement.periodBegin).toBeNull();
+  });
+
+  test('takes the dates and the name from the period metadata', () => {
+    const raw = { ...entitlements[2]!, period: { id: 60, natureId: 17 } };
+    const entitlement = toEntitlement(raw, {
+      id: 60,
+      natureId: 17,
+      label: '2027',
+      dateBegin: '2027-01-01T00:00:00Z',
+      dateEnd: '2027-12-31T00:00:00Z',
+    });
+    expect(entitlement.periodName).toBe('2027');
+    expect(entitlement.periodBegin).toBe('2027-01-01');
+    expect(entitlement.periodEnd).toBe('2027-12-31');
   });
 });
 

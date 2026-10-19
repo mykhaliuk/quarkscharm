@@ -14,6 +14,7 @@ export const useEntitlements = (): EntitlementsStore => {
   const created = createEntitlements({
     getEntitlements: (id) => whenConnected(() => getEntitlements(id)),
     getTsaEntitlements: (id) => whenConnected(() => getTsaEntitlements(id)),
+    getPeriods: usePeriods().load,
     employeeId: () => session.state.me?.employeeId ?? 0,
     today: () => today(session.state.me?.timeZone ?? 'Europe/Paris'),
   });

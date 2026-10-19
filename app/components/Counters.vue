@@ -19,6 +19,15 @@ const projected = (id: number, balance: number): number | null => {
   const after = entitlements.after(id, durations.value);
   return after === null || after === balance ? null : after;
 };
+const sharedNatures = computed(() => {
+  const seen = new Set<number>();
+  const shared = new Set<number>();
+  for (const counter of entitlements.counters.value) {
+    if (seen.has(counter.natureId)) shared.add(counter.natureId);
+    seen.add(counter.natureId);
+  }
+  return shared;
+});
 const ratio = (used: number, earned: number) =>
   earned <= 0 ? 0 : Math.min(100, Math.round((used / earned) * 100));
 
@@ -39,7 +48,9 @@ onMounted(() => {
     >
       <div class="head caption">
         <span>{{ natures.label(counter.natureId) }}</span>
-        <span>{{ counter.periodBegin?.slice(0, 4) ?? '' }}</span>
+        <span v-if="sharedNatures.has(counter.natureId)">
+          {{ counter.periodName ?? counter.periodBegin?.slice(0, 4) ?? '' }}
+        </span>
       </div>
       <div class="value counter-text" data-testid="balance">
         {{ trim(counter.balance) }}

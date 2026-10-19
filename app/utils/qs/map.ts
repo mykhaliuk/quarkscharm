@@ -3,6 +3,7 @@ import { segmentsToSlots, type Slot } from '~~/shared/utils/slots';
 import type {
   RawEmployee,
   RawEntitlement,
+  RawPeriod,
   RawPlannerEmployee,
   RawPreview,
   RawRequest,
@@ -36,6 +37,7 @@ export type Entitlement = {
   natureId: number;
   periodId: number;
   periodLabel: string;
+  periodName: string | null;
   periodBegin: string | null;
   periodEnd: string | null;
   earned: number;
@@ -111,12 +113,16 @@ export const toRequest = (raw: RawRequest): AbsenceRequest => {
   };
 };
 
-export const toEntitlement = (raw: RawEntitlement): Entitlement => {
+const toDate = (value: string | null | undefined): string | null =>
+  value ? fromApiDate(value).date : null;
+
+export const toEntitlement = (
+  raw: RawEntitlement,
+  metadata: RawPeriod | null,
+): Entitlement => {
   const { period } = raw;
-  const periodBegin = period.beginDate
-    ? fromApiDate(period.beginDate).date
-    : null;
-  const periodEnd = period.endDate ? fromApiDate(period.endDate).date : null;
+  const periodBegin = toDate(period.beginDate ?? metadata?.dateBegin);
+  const periodEnd = toDate(period.endDate ?? metadata?.dateEnd);
   const agreement = period.agreement?.label ?? `Period ${period.id}`;
   const dates =
     periodBegin !== null && periodEnd !== null
@@ -127,6 +133,7 @@ export const toEntitlement = (raw: RawEntitlement): Entitlement => {
     natureId: period.natureId,
     periodId: period.id,
     periodLabel: `${agreement}${dates}`,
+    periodName: metadata?.label ?? null,
     periodBegin,
     periodEnd,
     earned: raw.earned,

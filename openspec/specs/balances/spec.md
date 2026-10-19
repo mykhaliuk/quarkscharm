@@ -12,10 +12,21 @@ period for accruable natures (congés payés, Fulll Off, and time savings
 account entitlements when present): balance as the number, earned and used
 as a thin progress bar, pending and period label on hover.
 
+The entitlements call gives no period dates; the system SHALL take them from
+the period metadata. A period with nothing earned, used, pending or left
+SHALL show no counter. When a nature shows two counters, each SHALL name its
+period.
+
 #### Scenario: Two periods
 - **WHEN** the entitlements call returns congés payés for the period ending
   this May and the next one
-- **THEN** both counters are shown, the current period first
+- **THEN** both counters are shown, the current period first, each with its
+  period name ("2026-2027", "2027-2028")
+
+#### Scenario: Next period not started
+- **WHEN** the Fulll Off period 2026 has 5.65 days left and the period 2027
+  has nothing earned, used or pending
+- **THEN** one Fulll Off counter is shown, with 5.65
 
 ### Requirement: Projected balance
 While a selection is previewed, each counter affected SHALL show the

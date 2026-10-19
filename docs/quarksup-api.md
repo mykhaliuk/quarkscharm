@@ -139,6 +139,18 @@ Array of
 
 Header `x-total-count`. Default returns periods n-1, n, n+1.
 
+On the real tenant (2026-10-19) `period` has only `id`, `natureId` and
+`agreement`: no dates. Take them from `absencePeriod` by `period.id`. A
+period that has not started comes back with `earned`, `used`, `balance` and
+`pending` at 0 (Fulll Off `2027`). The time savings account entitlements (`CET
+Jours CP`, `CET jours Fulll OFF`) come in this list too, with a period from
+1900-01-01 to 2100-01-01; `entitlements/tsa` returns an empty answer.
+
+The quarksUp SPA shows one counter per nature with the sum of the balances
+of all periods (`CP` 4.32 = −0.5 + 4.82), zero counters included, and it
+does not take `pending` off. quarksCharm shows one counter per period on
+purpose.
+
 ### holidays
 
 `{ public: [ { label, date } ], schoolTerm: [ { area, holidays: [ { beginDate, endDate, label } ] } ] }`

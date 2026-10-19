@@ -9,6 +9,7 @@ const build = (over: Partial<Parameters<typeof createEntitlements>[0]> = {}) =>
   createEntitlements({
     getEntitlements: async () => entitlements,
     getTsaEntitlements: async () => [],
+    getPeriods: async () => [],
     employeeId: () => 9001,
     today: () => '2026-10-12',
     ...over,
@@ -46,14 +47,69 @@ const preview = (durations: number[]) => ({
 
 describe('entitlements store', () => {
   test('load keeps the current and the next period per nature, current first', async () => {
-    const store = build();
+    const store = build({
+      getEntitlements: async () => [
+        entitlements[1]!,
+        { ...entitlements[0]!, balance: -0.5 },
+        { ...entitlements[1]!, id: 390, earned: 2.08, balance: 2.08 },
+        entitlements[2]!,
+      ],
+    });
     await store.load();
     expect(store.counters.value.map((c) => [c.natureId, c.id])).toEqual([
       [14, 388],
-      [14, 389],
+      [14, 390],
       [17, 656],
     ]);
     expect(store.status.value).toBe('ready');
+  });
+
+  test('a period with nothing earned, used or pending is dropped', async () => {
+    const store = build();
+    await store.load();
+    expect(store.counters.value.map((c) => c.id)).toEqual([388, 656]);
+  });
+
+  test('undated entitlements take the dates from the period metadata', async () => {
+    const store = build({
+      getEntitlements: async () => [
+        undated(656, 42, 17, 5.65),
+        { ...undated(2069, 60, 17, 0), earned: 0, used: 0, pending: 0 },
+      ],
+      getPeriods: async () => [
+        {
+          id: 42,
+          natureId: 17,
+          label: '2026',
+          dateBegin: '2026-01-01T00:00:00Z',
+          dateEnd: '2026-12-31T00:00:00Z',
+        },
+        {
+          id: 60,
+          natureId: 17,
+          label: '2027',
+          dateBegin: '2027-01-01T00:00:00Z',
+          dateEnd: '2027-12-31T00:00:00Z',
+        },
+      ],
+    });
+    await store.load();
+    expect(
+      store.counters.value.map((c) => [c.id, c.periodName, c.periodBegin]),
+    ).toEqual([[656, '2026', '2026-01-01']]);
+  });
+
+  test('a failed period metadata call is logged and the counters still load', async () => {
+    const logged: unknown[] = [];
+    const store = build({
+      getPeriods: async () => {
+        throw new Error('403');
+      },
+      log: (...args) => void logged.push(args),
+    });
+    await store.load();
+    expect(store.status.value).toBe('ready');
+    expect(logged).toHaveLength(1);
   });
 
   test('a past period is dropped', async () => {
@@ -110,7 +166,7 @@ describe('entitlements store', () => {
       log: (...args) => void logged.push(args),
     });
     await store.load();
-    expect(store.counters.value).toHaveLength(3);
+    expect(store.counters.value).toHaveLength(2);
     expect(logged).toHaveLength(1);
   });
 

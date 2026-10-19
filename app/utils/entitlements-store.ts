@@ -1,12 +1,13 @@
 import { computed, ref } from 'vue';
 import { toEntitlement, type Entitlement, type Preview } from './qs/map';
-import type { RawEntitlement } from './qs/types';
+import type { RawEntitlement, RawPeriod } from './qs/types';
 
 export type EntitlementsStatus = 'idle' | 'loading' | 'ready' | 'failed';
 
 type Deps = {
   getEntitlements: (employeeId: number) => Promise<RawEntitlement[]>;
   getTsaEntitlements: (employeeId: number) => Promise<unknown>;
+  getPeriods: () => Promise<RawPeriod[]>;
   employeeId: () => number;
   today: () => string;
   log?: (...args: unknown[]) => void;
@@ -23,9 +24,16 @@ const isRawEntitlement = (value: unknown): value is RawEntitlement =>
 
 const round = (value: number): number => Math.round(value * 100) / 100;
 
+const isUntouched = (entitlement: Entitlement): boolean =>
+  entitlement.earned === 0 &&
+  entitlement.used === 0 &&
+  entitlement.pending === 0 &&
+  entitlement.balance === 0;
+
 export const createEntitlements = ({
   getEntitlements,
   getTsaEntitlements,
+  getPeriods,
   employeeId,
   today,
   log = console.warn,
@@ -33,23 +41,31 @@ export const createEntitlements = ({
   const all = ref<Entitlement[]>([]);
   const status = ref<EntitlementsStatus>('idle');
 
-  const parseTsa = (answer: unknown): Entitlement[] => {
-    if (Array.isArray(answer) && answer.every(isRawEntitlement)) {
-      return answer.map(toEntitlement);
-    }
+  const parseTsa = (answer: unknown): RawEntitlement[] => {
+    if (Array.isArray(answer) && answer.every(isRawEntitlement)) return answer;
     log('entitlements/tsa: unexpected shape, ignored');
     return [];
   };
+
+  const loadPeriods = (): Promise<RawPeriod[]> =>
+    getPeriods().catch((error: unknown) => {
+      log('entitlements/periods: unavailable, counters stay undated', error);
+      return [];
+    });
 
   const load = async (): Promise<void> => {
     status.value = 'loading';
     try {
       const id = employeeId();
-      const [main, tsa] = await Promise.all([
+      const [main, tsa, periods] = await Promise.all([
         getEntitlements(id),
         getTsaEntitlements(id).catch(() => []),
+        loadPeriods(),
       ]);
-      all.value = [...main.map(toEntitlement), ...parseTsa(tsa)];
+      const byId = new Map(periods.map((period) => [period.id, period]));
+      all.value = [...main, ...parseTsa(tsa)].map((raw) =>
+        toEntitlement(raw, byId.get(raw.period.id) ?? null),
+      );
       status.value = 'ready';
     } catch {
       status.value = 'failed';
@@ -62,6 +78,7 @@ export const createEntitlements = ({
     const now = today();
     const byNature = new Map<number, Entitlement[]>();
     for (const entitlement of all.value) {
+      if (isUntouched(entitlement)) continue;
       if (entitlement.periodEnd !== null && entitlement.periodEnd < now)
         continue;
       const list = byNature.get(entitlement.natureId) ?? [];
