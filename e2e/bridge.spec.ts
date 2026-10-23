@@ -138,6 +138,9 @@ test('Firefox: the page relay gives the token without a paste', async ({
   await page.getByLabel('Tenant').fill('fulll');
   await page.getByRole('button', { name: 'Connect' }).click();
   await expect(page).toHaveURL(/\/$/);
-  await expect(page.getByTestId('user-name')).toHaveText('Alex Example');
+  await expect(page.getByTestId('user-avatar')).toHaveAttribute(
+    'title',
+    'Alex Example',
+  );
   expect(await bridgeCalls(page)).toEqual([{ type: 'token', tenant: 'fulll' }]);
 });
