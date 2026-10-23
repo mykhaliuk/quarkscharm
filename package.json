@@ -24,7 +24,9 @@
     "ds:sync": "node scripts/ds-sync.js",
     "ds:check": "node scripts/ds-check.js",
     "test:e2e": "playwright test",
-    "extension:dev": "node scripts/extension-dev.js"
+    "extension:dev": "node scripts/extension-dev.js",
+    "extension:firefox": "node scripts/extension-firefox.js",
+    "extension:firefox:dev": "node scripts/extension-firefox.js --dev"
   },
   "dependencies": {
     "nuxt": "^4.6.1",

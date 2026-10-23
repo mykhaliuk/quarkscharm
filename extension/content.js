@@ -4,6 +4,7 @@ const read = () => {
 };
 
 (() => {
+  const api = globalThis.browser ?? globalThis.chrome;
   const PUSH_MS = 30 * 1000;
   const host = location.hostname;
   const tenant = host.split('.')[0];
@@ -22,12 +23,12 @@ const read = () => {
       warned = true;
       return;
     }
-    chrome.runtime.sendMessage(report).catch(() => {
+    api.runtime.sendMessage(report).catch(() => {
       // the extension was reloaded; this page keeps an orphan script
     });
   };
 
-  chrome.runtime.onMessage.addListener((message, _sender, respond) => {
+  api.runtime.onMessage.addListener((message, _sender, respond) => {
     if (message?.type === 'read') respond(read());
   });
 

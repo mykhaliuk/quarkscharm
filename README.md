@@ -43,6 +43,22 @@ in memory, never on disk, and answers `quarkscharm.vercel.app` only. For
 local development, `bun run extension:dev` builds `extension-dev/`, a copy
 that also answers `localhost:3000`; load it instead of `extension/`.
 
+### With the token bridge extension (Firefox)
+
+Firefox uses the same extension, built for Firefox. Firefox 128 or later.
+
+1. Clone this repository and run `bun install`.
+2. Run `bun run extension:firefox`. It builds `extension-firefox/`.
+3. Open `about:debugging#/runtime/this-firefox`, press "Load Temporary
+   Add-on…" and pick `extension-firefox/manifest.json`.
+4. Sign in to quarksUp once in this browser, then connect as in Chrome.
+
+Firefox removes a temporary add-on when it restarts: load it again after
+a restart. In Firefox, a small script of the extension also runs on the
+quarksCharm page, because Firefox does not let a page talk to an
+extension directly. For local development, `bun run extension:firefox:dev`
+builds `extension-firefox-dev/`, which also answers `localhost:3000`.
+
 ### With a pasted token
 
 1. Open quarksUp in your browser and sign in.
