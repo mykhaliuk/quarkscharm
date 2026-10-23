@@ -34,6 +34,9 @@ the token before it expires.
 4. Open quarksCharm, type your tenant (the part before `.quarksup.net`),
    leave the token empty and press Connect.
 
+Dia and other Chromium browsers install the extension in the same way: load
+the `extension/` folder unpacked from their extensions page.
+
 When no quarksUp tab is open, the extension opens one in the background
 and closes it when it has the token. If quarksUp asks you to sign in, the
 tab stays open: sign in and press Connect again.
