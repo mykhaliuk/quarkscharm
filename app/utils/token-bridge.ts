@@ -54,15 +54,58 @@ export const createBridgeClient = ({
   return { request };
 };
 
+const RELAY_ACK_MS = 500;
+
+export type RelayWindow = Pick<
+  Window,
+  'postMessage' | 'addEventListener' | 'removeEventListener'
+> & { location: { origin: string } };
+
+export const relayRuntime = (
+  target: RelayWindow,
+  ackMs = RELAY_ACK_MS,
+): BridgeRuntime => {
+  const { origin } = target.location;
+  const runtime: BridgeRuntime = {
+    lastError: undefined,
+    sendMessage: (_extensionId, message, callback) => {
+      const id = crypto.randomUUID();
+      const finish = (answer: unknown, lastError?: { message: string }) => {
+        clearTimeout(noRelay);
+        target.removeEventListener('message', onMessage);
+        runtime.lastError = lastError;
+        callback(answer);
+        runtime.lastError = undefined;
+      };
+      const onMessage = (event: MessageEvent) => {
+        if (event.source !== target || event.origin !== origin) return;
+        const data = event.data as Record<string, unknown> | null;
+        if (data?.source !== 'quarkscharm-bridge' || data.id !== id) return;
+        if (data.type === 'received') clearTimeout(noRelay);
+        if (data.type === 'answer') finish(data.answer);
+      };
+      const noRelay = setTimeout(
+        () => finish(undefined, { message: 'No relay on this page.' }),
+        ackMs,
+      );
+      target.addEventListener('message', onMessage);
+      target.postMessage(
+        { source: 'quarkscharm', id, ...(message as object) },
+        origin,
+      );
+    },
+  };
+  return runtime;
+};
+
 export const requestBridgeToken = (tenant: string): Promise<BridgeResult> =>
   createBridgeClient({ runtime: browserRuntime() }).request(tenant);
 
 function browserRuntime(): BridgeRuntime | null {
   const chrome = (globalThis as { chrome?: { runtime?: BridgeRuntime } })
     .chrome;
-  return typeof chrome?.runtime?.sendMessage === 'function'
-    ? chrome.runtime
-    : null;
+  if (typeof chrome?.runtime?.sendMessage === 'function') return chrome.runtime;
+  return typeof window === 'undefined' ? null : relayRuntime(window);
 }
 
 function parseAnswer(answer: unknown): BridgeResult {

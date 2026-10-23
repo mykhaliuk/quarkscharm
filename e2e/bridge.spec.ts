@@ -26,6 +26,25 @@ const stubBridge = async (page: Page, answers: StubAnswer[]) => {
   }, answers);
 };
 
+const stubRelay = async (page: Page, answer: StubAnswer) => {
+  await page.addInitScript((reply: StubAnswer) => {
+    const calls: unknown[] = [];
+    window.addEventListener('message', (event) => {
+      if (event.data?.source !== 'quarkscharm') return;
+      const { id, type, tenant } = event.data;
+      calls.push({ type, tenant });
+      const post = (data: object) =>
+        window.postMessage(
+          { source: 'quarkscharm-bridge', id, ...data },
+          location.origin,
+        );
+      post({ type: 'received' });
+      setTimeout(() => post({ type: 'answer', answer: reply }), 10);
+    });
+    Object.defineProperty(window, 'bridgeCalls', { value: calls });
+  }, answer);
+};
+
 const bridgeCalls = (page: Page) =>
   page.evaluate(
     () => (window as unknown as { bridgeCalls: unknown[] }).bridgeCalls,
@@ -108,4 +127,17 @@ test('a 401 with the extension retries without the prompt', async ({
     .toBeGreaterThanOrEqual(4);
   await expect(page.getByTestId('token-prompt')).toHaveCount(0);
   expect(await bridgeCalls(page)).toHaveLength(1);
+});
+
+test('Firefox: the page relay gives the token without a paste', async ({
+  page,
+}) => {
+  await installQsFixtures(page);
+  await stubRelay(page, tokenAnswer(buildToken()));
+  await page.goto('/connect');
+  await page.getByLabel('Tenant').fill('fulll');
+  await page.getByRole('button', { name: 'Connect' }).click();
+  await expect(page).toHaveURL(/\/$/);
+  await expect(page.getByTestId('user-name')).toHaveText('Alex Example');
+  expect(await bridgeCalls(page)).toEqual([{ type: 'token', tenant: 'fulll' }]);
 });

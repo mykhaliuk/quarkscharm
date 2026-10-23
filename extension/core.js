@@ -18,6 +18,16 @@ export const tenantOfHost = (host) => {
   return TENANT_RE.test(tenant) ? tenant : null;
 };
 
+export const pageOrigins = (manifest) => {
+  const relays = manifest.content_scripts ?? [];
+  const patterns =
+    manifest.externally_connectable?.matches ??
+    relays
+      .filter((script) => script.js.includes('page.js'))
+      .flatMap((script) => script.matches);
+  return patterns.map((pattern) => new URL(pattern).origin);
+};
+
 export const tokenExpiry = (token) => {
   if (typeof token !== 'string') return null;
   const parts = token.split('.');

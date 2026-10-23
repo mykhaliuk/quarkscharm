@@ -1,8 +1,10 @@
 import { describe, expect, test } from 'bun:test';
 import {
   createBridgeClient,
+  relayRuntime,
   TOKEN_BRIDGE_EXTENSION_ID,
   type BridgeRuntime,
+  type RelayWindow,
 } from '~/utils/token-bridge';
 
 const runtimeAnswering = (
@@ -85,5 +87,110 @@ describe('token bridge client', () => {
     };
     const client = createBridgeClient({ runtime });
     expect(await client.request('fulll')).toEqual({ kind: 'absent' });
+  });
+});
+
+const ORIGIN = 'https://quarkscharm.vercel.app';
+
+type Posted = { source: string; id: string; type: string; tenant: string };
+
+const fakeWindow = () => {
+  const listeners = new Set<(event: MessageEvent) => void>();
+  const posted: Posted[] = [];
+  const target: RelayWindow & {
+    posted: Posted[];
+    deliver: (data: unknown, from?: Partial<MessageEvent>) => void;
+    listenerCount: () => number;
+  } = {
+    location: { origin: ORIGIN },
+    posted,
+    postMessage: ((data: Posted) => posted.push(data)) as Window['postMessage'],
+    addEventListener: ((_type: string, listener: (e: MessageEvent) => void) =>
+      listeners.add(listener)) as Window['addEventListener'],
+    removeEventListener: ((
+      _type: string,
+      listener: (e: MessageEvent) => void,
+    ) => listeners.delete(listener)) as Window['removeEventListener'],
+    deliver: (data, from = {}) => {
+      const event = { source: target, origin: ORIGIN, data, ...from };
+      for (const listener of listeners) listener(event as MessageEvent);
+    },
+    listenerCount: () => listeners.size,
+  };
+  return target;
+};
+
+const relayAnswer = (id: string, answer: unknown) => ({
+  source: 'quarkscharm-bridge',
+  id,
+  type: 'answer',
+  answer,
+});
+
+describe('token bridge relay', () => {
+  test('posts the request to the page origin and returns the relay answer', async () => {
+    const target = fakeWindow();
+    const client = createBridgeClient({ runtime: relayRuntime(target) });
+    const pending = client.request('fulll');
+    const request = target.posted[0];
+    expect(request).toMatchObject({
+      source: 'quarkscharm',
+      type: 'token',
+      tenant: 'fulll',
+    });
+    target.deliver(
+      relayAnswer(request.id, {
+        kind: 'token',
+        token: 'a.b.c',
+        expiresAt: 1_800_000_000_000,
+      }),
+    );
+    expect(await pending).toEqual({
+      kind: 'token',
+      token: 'a.b.c',
+      expiresAt: 1_800_000_000_000,
+    });
+    expect(target.listenerCount()).toBe(0);
+  });
+
+  test('ignores answers of other requests, sources and origins', async () => {
+    const target = fakeWindow();
+    const client = createBridgeClient({ runtime: relayRuntime(target) });
+    const first = client.request('fulll');
+    const second = client.request('other');
+    const firstId = target.posted[0].id;
+    const secondId = target.posted[1].id;
+    expect(firstId).not.toBe(secondId);
+    const login = { kind: 'login' };
+    target.deliver({ ...relayAnswer(firstId, login), source: 'quarkscharm' });
+    target.deliver(relayAnswer(firstId, login), {
+      origin: 'https://evil.example',
+    });
+    target.deliver(relayAnswer(firstId, login), { source: null });
+    expect(target.listenerCount()).toBe(2);
+    target.deliver(relayAnswer(secondId, login));
+    expect(await second).toEqual({ kind: 'login' });
+    target.deliver(relayAnswer(firstId, { kind: 'timeout' }));
+    expect(await first).toEqual({ kind: 'timeout' });
+  });
+
+  test('no relay on the page gives absent', async () => {
+    const target = fakeWindow();
+    const runtime = relayRuntime(target, 10);
+    const client = createBridgeClient({ runtime });
+    expect(await client.request('fulll')).toEqual({ kind: 'absent' });
+    expect(target.listenerCount()).toBe(0);
+    expect(runtime.lastError).toBeUndefined();
+  });
+
+  test('a received relay waits for its answer past the ack time', async () => {
+    const target = fakeWindow();
+    const client = createBridgeClient({ runtime: relayRuntime(target, 10) });
+    const pending = client.request('fulll');
+    const { id } = target.posted[0];
+    target.deliver({ source: 'quarkscharm-bridge', id, type: 'received' });
+    await Bun.sleep(30);
+    target.deliver(relayAnswer(id, { kind: 'login' }));
+    expect(await pending).toEqual({ kind: 'login' });
   });
 });
