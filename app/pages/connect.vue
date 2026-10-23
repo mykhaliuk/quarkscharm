@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { isTenant } from '~/utils/tenant';
 import { normalizeToken } from '~/utils/token';
 
 definePageMeta({ layout: false });
@@ -11,6 +12,9 @@ const busy = ref(false);
 const askingBridge = ref(false);
 
 const MESSAGES = {
+  noTenant: 'Enter the tenant first.',
+  badTenant:
+    'Enter the tenant as the part before .quarksup.net: lowercase letters, digits and hyphens.',
   malformed:
     'This is not a quarksUp token. Paste the value of the authorization header.',
   rejected: 'Token rejected. Paste a fresh one from the authorization header.',
@@ -45,6 +49,11 @@ onMounted(() => {
 
 const submit = async () => {
   error.value = null;
+  const typedTenant = tenant.value.trim();
+  if (!isTenant(typedTenant)) {
+    error.value = typedTenant === '' ? MESSAGES.noTenant : MESSAGES.badTenant;
+    return;
+  }
   if (token.value.trim() === '') {
     await connectWithBridge(false);
     return;
@@ -67,7 +76,7 @@ const submit = async () => {
 
 <template>
   <main class="connect">
-    <form class="card" @submit.prevent="submit">
+    <form class="card" novalidate @submit.prevent="submit">
       <h1 class="title">Connect</h1>
       <p class="body">
         quarksCharm paints your absences on a year grid. It talks to quarksUp

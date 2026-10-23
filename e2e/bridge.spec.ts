@@ -84,6 +84,32 @@ test('Connect with an empty token asks the extension for the typed tenant', asyn
   await expect(page).toHaveURL(/\/$/);
 });
 
+test('Connect without a tenant does not ask the extension', async ({
+  page,
+}) => {
+  await installQsFixtures(page);
+  await stubBridge(page, [tokenAnswer(buildToken())]);
+  await page.goto('/connect');
+  await page.getByRole('button', { name: 'Connect' }).click();
+  await expect(page.getByRole('alert')).toHaveText('Enter the tenant first.');
+  await expect(page).toHaveURL(/\/connect$/);
+  expect(await bridgeCalls(page)).toEqual([]);
+});
+
+test('Connect with a full host as the tenant does not ask the extension', async ({
+  page,
+}) => {
+  await installQsFixtures(page);
+  await stubBridge(page, [tokenAnswer(buildToken())]);
+  await page.goto('/connect');
+  await page.getByLabel('Tenant').fill('fulll.quarksup.net');
+  await page.getByRole('button', { name: 'Connect' }).click();
+  await expect(page.getByRole('alert')).toContainText(
+    'the part before .quarksup.net',
+  );
+  expect(await bridgeCalls(page)).toEqual([]);
+});
+
 test('a login answer keeps the paste and says what to do', async ({ page }) => {
   await installQsFixtures(page);
   await stubBridge(page, [{ kind: 'login' }]);
