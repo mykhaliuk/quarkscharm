@@ -2,6 +2,7 @@ import { describe, expect, test } from 'bun:test';
 import {
   addDays,
   daysBetween,
+  isoWeek,
   isYmd,
   leaveYearMonths,
   leaveYearOf,
@@ -47,6 +48,19 @@ describe('weekday', () => {
     expect(weekday('2026-10-12')).toBe(0);
     expect(weekday('2026-10-18')).toBe(6);
     expect(weekday('2026-11-01')).toBe(6);
+  });
+});
+
+describe('isoWeek', () => {
+  test('numbers weeks by the Thursday rule', () => {
+    expect(isoWeek('2026-10-12')).toBe(42);
+    expect(isoWeek('2026-10-18')).toBe(42);
+    expect(isoWeek('2026-01-01')).toBe(1);
+    expect(isoWeek('2025-12-29')).toBe(1);
+    expect(isoWeek('2026-12-31')).toBe(53);
+    expect(isoWeek('2027-01-01')).toBe(53);
+    expect(isoWeek('2027-01-04')).toBe(1);
+    expect(isoWeek('2021-01-03')).toBe(53);
   });
 });
 

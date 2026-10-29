@@ -50,6 +50,12 @@ export const daysBetween = (a: Ymd, b: Ymd): number =>
 export const weekday = (ymd: Ymd): number =>
   (new Date(toUtc(ymd)).getUTCDay() + 6) % 7;
 
+export const isoWeek = (ymd: Ymd): number => {
+  const thursday = addDays(ymd, 3 - weekday(ymd));
+  const yearStart = `${thursday.slice(0, 4)}-01-01`;
+  return Math.floor(daysBetween(yearStart, thursday) / 7) + 1;
+};
+
 export const monthDays = (year: number, month: number): Ymd[] => {
   const count = new Date(Date.UTC(year, month, 0)).getUTCDate();
   const days: Ymd[] = [];
