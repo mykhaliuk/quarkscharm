@@ -134,3 +134,24 @@ test('a failed part shows a retry control that reloads it', async ({
   await expect(page.locator('[data-date="2026-11-11"]')).toHaveClass(/muted/);
   await expect(retry).toBeHidden();
 });
+
+const weekLabels = (page: Page, month: string) =>
+  page.locator(`[data-month="${month}"] [data-week]`);
+
+test('each month row shows its ISO week number', async ({ page }) => {
+  await connect(page);
+  const october = weekLabels(page, '10');
+  await expect(october).toHaveText(['40', '41', '42', '43', '44']);
+  await expect(weekLabels(page, '12').last()).toHaveText('53');
+  const january = weekLabels(page, '1');
+  await expect(january.nth(0)).toHaveText('53');
+  await expect(january.nth(1)).toHaveText('1');
+  await expect(october.nth(2)).toHaveAttribute('title', 'Week 42');
+});
+
+test('a click on a week number selects no day', async ({ page }) => {
+  await connect(page);
+  await page.locator('[data-month="10"] [data-week="42"]').click();
+  await expect(page.locator('[data-date].selected')).toHaveCount(0);
+  await expect(page.getByTestId('request-card')).toBeHidden();
+});
